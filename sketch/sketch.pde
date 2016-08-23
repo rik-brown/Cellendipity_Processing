@@ -1,47 +1,9 @@
 /*
-*  v00.00  Is a copy of Expansion_00_03
-*          GOAL: Final push in refactoring. NO NEW IDEAS ADDED UNTIL I'M DONE!
-*  DONE    Sub-goal 1: Tidy up in colours. Quite happy in 00.02 though could add boolean to select BW/colour
-*                      Could consider using 'hue = degrees(v.heading()) + 180;'
-*          Sub-goal 2: Tidy up in spawning (use DNA recombination?)
-*          Sub-goal 3: Prepare for sliders
-*          Sub-goal 4: Fewer variables per cell (move them up to Colony where possible - when all cells will have the same values in an given population)
-*  v00.01  Saved as waypoint. Cute :-)
-*          Sub-goal 5: If Perlin then don't bounce on collide
-*          Sub-goal 6: Fix spawning! OK in 00.02
-*  v00.02  Saved before moving on to tweak angles (from -PI/+PI to 0/TWO_PI)
-*          Sub-goal 7: Need to figure out what I mean by rMax and rMaxMax. Bit wonky
-*          Sub-goal 8: Fertile needs to be 'reset' after a spawn-event. Could rStart be set to r?
-*  v00.03  Can't remember what I added here...
-*  v00.04  Playing with a new feature :-E Central 'nucleus' indicates fertility (discovered a cute bug though - other rStart was not reset)
-*
-*          First KEEPER in a while :-D
-*
-*          This is pretty close to being a stand-alone, requiring very few controls.
-*          If I should add any, they could be;
-*          Background B+W/Colour
-*          Foreground B+W/Colour
-*          Background colour
-*          Stroke colour
-*          Fill colour
-*          Seed colour?
-*
-*          Maybe this IS only an extension of the standard*: "show seed" (BOOLEAN)
-*
-*          And the inevitable extended set....
-*          Start Radius
-*          End Radius
-*          FertilityThreshold
-*          Perlin etc. etc.
-*
-*          Possible further tweaks:
-*          The fill alpha of the seed starts at 0 and grows steadily higher as r approaches fertility
-*          Gave it a try but on balance, I like the binary / yin/yang / white/black (plus association to frogspawn)
-*
-*  v00.05  Moving some cell variables from Cell and Colony up to Global
-*          Bug(ish): If Growing = false (fixed radius) then cell will never become fertile. Maybe a counter is preferable?
-*          Spawn position needs moving to the radius.
-*          How about more than one "inner cores" ? What could they represent? A more flattened ellipse.
+* GOAL: Make this work like
+* Repository: https://github.com/rik-brown/Cellendipity_NOC
+* Webpage: https://rik-brown.github.io/Cellendipity_NOC/
+* It could also be closer to 'Aybe Sea' (only one strain, centered, not randomised by DNA but using preset values with some freedom to be random)
+* Run once with randomised values and output a twitter-friendly image file once the colony has run it's course (or a time-limit is reached)
 */
 
 Colony colony;      // A colony object
@@ -59,7 +21,7 @@ int colonyMax = 500;
 
 
 //MOVED FROM CELL in v00.05
-//ALL THESE CONTROLS ARE EXPECTED TO OPERATE AT COLONY-LEVEL 
+//ALL THESE CONTROLS ARE EXPECTED TO OPERATE AT COLONY-LEVEL
 //(EQUAL FOR ALL CELLS)
 boolean perlin = true;  // Movement is either perlin or linear (could this be switched to 'degrees of' - 0-100% slider)?
 boolean spiralling = false; // A sub-category of movement (could this be switched to 'degrees of' - 0-100% slider)?
@@ -90,18 +52,18 @@ PVector col;        // PVector col needs to be declared to allow for random pick
 
 void setup() {
   fullScreen();
-  
+
   //size(1000, 1000); // debug
   //frameRate(3);   // debug
-  
+
   colorMode(HSB, 360, 100, 100, 100);
   smooth();
   ellipseMode(RADIUS);
-  
+
   refreshBackgroundColour();
-  
+
   if (greyscaleON) {background(bkgColGrey); } else {background(bkgColH, bkgColS, bkgColB, 255);}
-  
+
   populateColony(); //Creates a colony with initial population of cells
 }
 
@@ -110,7 +72,7 @@ void draw() {
   if (veilDrawON) {veil();}     // To lay a transparent 'veil' over the background every frame
   colony.run();    //<>//
   manageColony();
-  //println(colony.cells.size()); // debug  
+  //println(colony.cells.size()); // debug
 }
 
 void refreshBackgroundColour() {
@@ -120,11 +82,11 @@ void refreshBackgroundColour() {
   //bkgColH = 0;                      // Fixed background colour for HSB colour (H)
   //bkgColS = 0;                      // Fixed background colour for HSB colour (S)
   //bkgColB = 0;                      // Fixed background colour for HSB colour (B)
-    
+
   //bkgColH = int(random(255));       // Random background colour for HSB colour (H)
   //bkgColS = int(random(255));       // Random background colour for HSB colour (S)
   //bkgColB = int(random(255));       // Random background colour for HSB colour (B)
-  
+
   bkgColH = int(random(255));       // Random background colour for HSB colour (H)
   bkgColS = int(random(10, 128));   // Random background colour for HSB colour (S) (PALE)
   bkgColB = int(random(200, 255));  // Random background colour for HSB colour (B) (PALE)
@@ -138,7 +100,7 @@ void veil() {
 }
 
 void populateColony()  {
-  float rStart = random(rStartMin, rStartMax); 
+  float rStart = random(rStartMin, rStartMax);
   //colony = new Colony(int(random(colSizeMin, colSizeMax)), rStart); //Could Colony receive a color-seed value (that is iterated through in a for- loop?) (or randomized?)
   //colony = new Colony(1, rStart); // Populate the colony with a single cell. Useful for debugging
   colony = new Colony(1, 50);
@@ -171,7 +133,7 @@ void mousePressed() {
         col = PVector.fromAngle(PI/3); } // This angle gived BLUE (maps to 240)
         else {
         col = PVector.fromAngle(-PI/3); } // This angle gived GREEN (maps to 120)
-  colony.spawn(mouseX, mouseY, vel.x, vel.y, col.heading(), col.mag(), rStart); 
+  colony.spawn(mouseX, mouseY, vel.x, vel.y, col.heading(), col.mag(), rStart);
 }
 
 void mouseDragged() {
@@ -184,28 +146,28 @@ void mouseDragged() {
         col = PVector.fromAngle(PI/3); } // This angle gived BLUE (maps to 240)
         else {
         col = PVector.fromAngle(-PI/3); } // This angle gived GREEN (maps to 120)
-  colony.spawn(mouseX, mouseY, vel.x, vel.y, col.heading(), col.mag(), rStart);  
+  colony.spawn(mouseX, mouseY, vel.x, vel.y, col.heading(), col.mag(), rStart);
 }
 
 void redSpawn() {
   PVector pos = new PVector (random(width), random(height));
   PVector vel = PVector.random2D();
   col = PVector.fromAngle(PI); // This angle gived RED (maps to 0)
-  colony.spawn(pos.x, pos.y, vel.x, vel.y, col.heading(), col.mag(), rStart); 
+  colony.spawn(pos.x, pos.y, vel.x, vel.y, col.heading(), col.mag(), rStart);
 }
 
 void greenSpawn() {
   PVector pos = new PVector (random(width), random(height));
   PVector vel = PVector.random2D();
   col = PVector.fromAngle(-PI/3); // This angle gived GREEN (maps to 120)
-  colony.spawn(pos.x, pos.y, vel.x, vel.y, col.heading(), col.mag(), rStart); 
+  colony.spawn(pos.x, pos.y, vel.x, vel.y, col.heading(), col.mag(), rStart);
 }
 
 void blueSpawn() {
   PVector pos = new PVector (random(width), random(height));
   PVector vel = PVector.random2D();
   col = PVector.fromAngle(PI/3); // This angle gived BLUE (maps to 240)
-  colony.spawn(pos.x, pos.y, vel.x, vel.y, col.heading(), col.mag(), rStart); 
+  colony.spawn(pos.x, pos.y, vel.x, vel.y, col.heading(), col.mag(), rStart);
 }
 void screendump() {
   saveFrame(screendumpPath);
