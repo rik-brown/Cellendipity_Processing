@@ -1,178 +1,112 @@
 class Cell {
-  
+
   //  Objects
   DNA dna;         // DNA
-  
-  // BOOLEAN - Define settings for the whole colony - do they need to exist per cell?
-  // These variables might need to be kept cell-specific (to be changed individually based on rules & events)
-  boolean moving;     // Changing position
-  boolean spawning;   // Reproducing new cells on collision (if fertility rules are met)
-  boolean displaying; // Being displayed
-  
-  //  Variables for movement (COMMON)
+
+  // BOOLEAN
+  boolean fertile;
+
+  // GROWTH AND REPRODUCTION
+  float age;       // Age (nr. of frames since birth)
+  float lifespan;
+  float fertility; // Condition for becoming fertile
+  int spawnCount;
+
+  // SIZE AND SHAPE
+  float cellStartSize;
+  float cellEndSize;
+  float r;         // Radius (half the width/height of the ellipse, which is drawn with width = r * 2)
+  float flatness;  // To make flatter ellipses (1 = circle)
+  float growth;    // Radius grows by this amount per frame
+  float drawStep;  // To enable spacing of the drawn object (ellipse)
+  float drawStepN;
+
+  // MOVEMENT
   PVector position;
-  PVector velocity; 
-    
-  //  Variables for movement (LINEAR+COLLISONS)
-  float m;  // Mass
-    
-  //  Variables for movement (PERLIN only)
+  PVector velocityLinear;
+  float noisePercent;
+  float spiral;
   float vMax;   // multiplication factor for velocity
   float xoff;       // x offset
   float yoff;       // y offset
   float step;       // step size
-  
-  //  Variables for COLOUR
+
+  // FILL COLOUR
   PVector fill_Colour;   // For HSB you need Hue to be the heading of a PVector
   PVector spawnCol;      // spawnCol needs to be a GLOBAL variable
-  float fill_HR;         // Hue (HSB) / Red (RGB)
-  float fill_SG;         // Saturation (HSB) / Green (RGB)
-  float fill_BB;         // Brightness (HSB) / Blue (RGB)
+  float fill_H;         // Hue (HSB) / Red (RGB)
+  float fill_S;         // Saturation (HSB) / Green (RGB)
+  float fill_B;         // Brightness (HSB) / Blue (RGB)
   float fill_Alpha;      // Transparency (HSB & RGB)
+
+  // FILL COLOUR
   PVector stroke_Colour; // For HSB you need Hue to be the heading of a PVector
-  float stroke_HR;       // Hue (HSB) / Red (RGB)
-  float stroke_SG;       // Saturation (HSB) / Green (RGB)
-  float stroke_BB;       // Brightness (HSB) / Blue (RGB)
+  float stroke_H;       // Hue (HSB) / Red (RGB)
+  float stroke_S;       // Saturation (HSB) / Green (RGB)
+  float stroke_B;       // Brightness (HSB) / Blue (RGB)
   float stroke_Alpha;    // Transparency (HSB & RGB)
-  float strokeOffset;
-  float seed_Alpha;      // Transparency of seed
-  
-  //  Variables for GROWTH AND REPRODUCTION
-  float age;       // Age (nr. of frames since birth)
-  float fertility; // Condition for becoming fertile
-  //float fertile; // Limit for fertility (it used to be a counter before turning boolean. Might turn back...)
-  boolean fertile; // Fertile is a BOOLEAN state
-  float health;    // Health. Counts down from initial value to 0 (= DEATH)
-  int collCount;   // Counter for number of collisions. Counts down from initial value to 0 (= DEATH)
-  
-  //  Variables for SIZE AND SHAPE
-  float rStart;      // Starting radius
-  float r;         // Radius (half the width/height of the ellipse, which is drawn with width = r * 2)
-  float rMin;      // Minimum (& starting) radius
-  float rMax;      // Maximum radius 
-  int rMaxMax;// Highest possible rMax when mapping
-  float growth;    // Radius grows by this amount per frame
-  int growShrink;  // If 1 then growth is positive (expansion), if -1 then growth is negative (contraction)
-  float flatness;  // To make flatter ellipses (1 = circle)
-  float drawStep;  // To enable spacing of the drawn object (ellipse)
-  float drawStepMax;
-  
-  boolean toggle;
-  float handedness;
-  
-    
-  // CONSTRUCTOR: create a 'cell' object  
-  Cell (PVector pos, PVector vel, PVector fillCol, DNA dna_, float rStart_) {
+
+  // CONSTRUCTOR: create a 'cell' object
+  Cell (PVector pos, PVector vel, DNA dna_) {
   // OBJECTS
   dna = dna_;
-  // gene assignment:
-  // 0 = rMin
-  // 1 = rMax
-  // 2 = growth
-  // 3 = step
-  // 4 = vMax
-  // 5 = fill_HR
-  // 6 = fill_SG
-  // 7 = fill_BB
-  // 8 = fill_Alpha
-  // 9 = stroke_HR
-  // 10 = stroke_SG
-  // 11 = stroke_BB
-  // 12 = stroke_Alpha
-  // 13 = flatness
-  
+
+  // DNA gene mapping (12 genes) NEW
+  // 0 = fill Hue & vMax (Noise)
+  // 1 = fill Saturation
+  // 2 = fill Brightness & Spiral screw
+  // 3 = fill Alpha
+  // 4 = stroke Hue & step (Noise)
+  // 5 = stroke Saturation
+  // 6 = stroke Brightness & noisePercent
+  // 7 = stroke Alpha
+  // 8 = cellStartSize & Fertility (large size = lower fertility)
+  // 9 = cellEndSize
+  // 10 = lifespan & spawnCount (long lifespan = few children)
+  // 11 = flatness & spiral handedness
+
   // BOOLEAN
-  moving = true;
-  spawning = true;
-  displaying = true;
-  toggle = false; //Used when movement is stepped. Always false to begin with.
   fertile = false; // A new cell always starts off infertile
-  
-    
+
   // GROWTH AND REPRODUCTION
-  age = 0; // A new cell always starts with age = 0
-  fertility = 0.9;
-  //fertility = random(0.75, 0.85); // Percentage of radius. If r is less than this (when r tends to shrink) then fertile = true
-  health = 300;   // Max. number of frames before DEATH
-  collCount = 10;  // Max. number of collisions before DEATH
-    
+  age = 0; // Age is 'number of frames since birth'. A new cell always starts with age = 0. From age comes maturity
+  lifespan = map(dna.genes[10], 0, 1, 1000, 2000); // Lifespan can be lowered by DNA but not increased
+  fertility = map(dna.genes[8], 1, 0, 0.7, 0.9); // How soon will the cell become fertile?
+  spawnCount = int(map(dna.genes[10], 1, 0, 1, 5)); // Max. number of spawns
+
   // SIZE AND SHAPE
-  rMaxMax = 100;
-  rStart = rStart_;
-  r = rStart;          // Initial value for radius
-  //rMax = rStart + map(dna.genes[1], 0, 1, 1, rMaxMax);
-  rMax = 100;
-  //rMin = map(dna.genes[0], 0, 1, 1, rStart/3);
-  rMin = r * 0.03;
-  //growth = 0; // For fixed radius
-  //growth = 0.1; // Simple linear growth, all cells identical
-  growth = map(dna.genes[2], 0, 1, 0.03, 0.03); // Simple linear growth, all cells unique
-  //growth = 1/(rStart-r+1);
-  //growth = (rStart-r+0.3)/rStart;
-  //growth = (rStart-r+1)/rStart;
-  growShrink = -1; // Growth is +ve = Expansion. Growth is -ve = Contraction.
-  growth *= growShrink;
-  //flatness = map(dna.genes[13], 0, 1, 1, 1.4); // Scaling factor for radius in 'height' axis
-  flatness = 1;
-  drawStepMax = r*2/3;
-  //drawStepMax = 8;
-  //drawStep = r*2;
-  //drawStep = r*2/velocity.mag();
-  drawStep = drawStepMax;
-  handedness = random(1); // Controls spiralling direction
- 
-  // COMMON
-  position = pos.copy();
-  velocity = vel.copy();
-  //velocity.mult(2);      // Does initial velocity not have a magnitude? Or is this to allow for individual variation?
-      
-  // PERLIN
-  vMax = map(dna.genes[4], 0, 1, 0, 4);
+  cellStartSize = map(dna.genes[8], 0, 1, 10, 20);
+  cellEndSize = cellStartSize * map(dna.genes[9], 0, 1, 0, 0.1);
+  //this.r = this.cellStartSize; // Initial value for radius
+  flatness = map(dna.genes[11], 0, 1, 0.5, 2); // To make circles into ellipses. range 0.5 - 1.5
+
+  growth = (cellStartSize-cellEndSize)/lifespan; // Should work for both large>small and small>large
+  drawStep = 1;
+  drawStepB = 1;
+
+  // MOVEMENT
+  position = pos.copy(); //cell has position
+  velocityLinear = vel.copy(); //cell has unique basic velocity component
+  this.noisePercent = this.dna.genes[6]; // How much influence on velocity does Perlin noise have?
+  this.spiral = map(this.dna.genes[2], 0, 1, -0.75, 0.75); // Spiral screw amount
+  vMax = map(dna.genes[0], 0, 1, 0, 5); // Maximum magnitude in velocity components generated by noise
   xoff = random(1000); //Seed for noise
   yoff = random(1000); //Seed for noise
-  step = map(dna.genes[3], 0, 1, 0.005, 0.05);
-  
+  step = map(dna.genes[3], 0, 1, 0.005, 0.005); //Step-size for noise
+
   // COLOUR
-  
-  // COLOUR FROM DNA
-    //fill_HR = map(dna.genes[5], 0, 1, 0, 360);
-    //fill_SG = map(dna.genes[6], 0, 1, 0, 100);
-    //fill_BB = map(dna.genes[7], 0, 1, 0, 100);
-    //fill_Alpha = map(dna.genes[8], 0, 1, 0, 100);
-    
-    //stroke_HR = map(dna.genes[9], 0, 1, 0, 360);
-    //stroke_SG = map(dna.genes[10], 0, 1, 0, 100);
-    //stroke_BB = map(dna.genes[11], 0, 1, 0, 100);
-    //stroke_Alpha = map(dna.genes[12], 0, 1, 0, 100);
-  
-  // COLOUR FROM FIXED VALUES
-    //fill_HR = 0;
-    fill_SG = 100;  
-    fill_BB = 100;
-    fill_Alpha = 100;
-    
-    stroke_HR = 180;
-    stroke_SG = 100;
-    stroke_BB = 100;
-    stroke_Alpha = 4; // (previous: 18, 45, 24)
 
-  // COLOUR FROM VECTORS
-    fill_Colour = fillCol;
-    fill_Colour = fillCol.copy(); // Is this actually needed? Why a copy and not just = ?
-    ////println("fillColHead: " + fill_Colour.heading()); //DEBUG
-    fill_HR = map(fill_Colour.heading(), -PI, PI, 0, 360); // Hue is an angle between 0-360 given by the heading of the colour vector
-    //fill_SG = map(fill_Colour.mag(), 0, 1, 0, 100);  
+  fill_H = map(dna.genes[0], 0, 1, 0, 360);
+  fill_S = map(dna.genes[1], 0, 1, 0, 255);
+  fill_B = map(dna.genes[2], 0, 1, 0, 255);
+  fillColor = color(fill_H, fill_S, fill_B); // Initial color is set
+  fill_Alpha = map(dna.genes[3], 0, 1, 128, 255);
 
-  // COLOUR FROM SIZE
-    //fill_HR = map(r, rStart, rMaxMax, 0, 360);
-    //fill_BB = map(r, rStart, rMaxMax, 0, 100);
-    seed_Alpha = map(r, rStart, (rStart*fertility), 0, 50);
-
-  // COLOUR <other stuff>
-    strokeOffset = random (-PI/2, PI/2); // Used in colourTwist to offset the stroke colour from the fill colour by this angle
-  
-  // LINEAR+COLLISIONS
-  m = r * 0.1;
+  stroke_HR = map(dna.genes[4], 0, 1, 0, 360);
+  stroke_SG = map(dna.genes[5], 0, 1, 0, 255);
+  stroke_BB = map(dna.genes[6], 0, 1, 0, 255);
+  strokeColor = color(stroke_H, stroke_S, stroke_B); // Initial color is set
+  stroke_Alpha = map(dna.genes[7], 0, 1, 0, 64);
   }
 
   void run() {
@@ -186,16 +120,16 @@ class Cell {
     if (displaying) {display();}
     //debugTextCell(); // FOR DEBUG ONLY
   }  //<>//
-  
+
   void changePosition() { //Update parameters linked to the position
     if (perlin) {movePerlin();} else {moveLinear();}
   }
-   
+
   void changeShape() { // Update parameters linked to the shape
     // Nothing happening here
   }
-    
-  void live() { 
+
+  void live() {
     age ++;
     //health -= 1; //health is not in use
     drawStep --;
@@ -203,7 +137,7 @@ class Cell {
     if (drawStep < 0) {drawStep = drawStepMax; toggle = true; }
     if (collCount ==0) {fertile = false;}
   }
-  
+
   void changeSize() { // Put all code related to updating SIZE variables HERE
     r += growth; // Simple linear growth
     //growth = 1/(rStart-r+1);  // Comment this out for linear growth
@@ -211,13 +145,13 @@ class Cell {
     //growth *= growShrink; // Earlier attempt to toggle between +ve and -ve growth. Needs some work...
     //if (r >= rMax) { growth *= -1; } // To cause a growing r to 'rebound' when upper limit is reached
   }
-  
+
   void changeFertility() { // Put all code related to updating Fertility variables HERE
     if (r < rStart * fertility) {fertile = true;} else {fertile = false;} // A cell is fertile if r is within limit (a % of rStart)
   }
-  
+
   void changeColour() {
-    //fill_HR = map(r, rMin, rStart, 0, 360);    // Modulate fill hue by radius 
+    //fill_HR = map(r, rMin, rStart, 0, 360);    // Modulate fill hue by radius
     //fill_BB = map(r, rMin, rStart, 100, 50);      // Modulate fill brightness by radius
     //fill_SG = map(r, rMin, rStart, 20, 100);      // Modulate fill saturation by radius
     //fill_Alpha = map(r, rMin, rStart, 100, 20);  // Modulate fill_Alpha by radius
@@ -247,20 +181,20 @@ class Cell {
     }
     position.add(velocity);
   }
-    
+
   void checkBoundaryRebound() {
     if (position.x > width-r) {
       position.x = width-r;
       velocity.x *= -1;
-    } 
+    }
     else if (position.x < r) {
       position.x = r;
       velocity.x *= -1;
-    } 
+    }
     else if (position.y > height-r) {
       position.y = height-r;
       velocity.y *= -1;
-    } 
+    }
     else if (position.y < r) {
       position.y = r;
       velocity.y *= -1;
@@ -270,13 +204,13 @@ class Cell {
   void checkBoundaryWraparound() {
     if (position.x > width+r) {
       position.x = -r;
-    } 
+    }
     else if (position.x < -r) {
       position.x = width+r;
-    } 
+    }
     else if (position.y > height+r) {
       position.y = -r;
-    } 
+    }
     else if (position.y < -r) {
       position.y = height+r;
     }
@@ -304,12 +238,12 @@ class Cell {
       DNA childDNA = dna.copy();    // Child DNA is exact copy of single parent
       // childDNA.geneMutate(0.01); // DNA can mutate if a random number is less than 0.01
       return new Cell (position, velocity, fill_Colour, childDNA, rStart); // this is a pretty cool trick!
-    } 
+    }
     else {
       return null; // If no child was spawned
     }
   }
- 
+
   void colourTwist() { // To calculate fill colour H (in HSB) from PVector 'fill_Colour' heading. Assumes fill_HR is started from fill_colour PVector
     float twistAngle = map(r, rMin, rStart, -PI/12, PI/12);  // (rMax*PI/rMaxMax*4)
     PVector fillTemp = fill_Colour.copy();
@@ -317,22 +251,22 @@ class Cell {
     spawnCol = fillTemp.copy();  // Set the spawnCol at the 'twisted' fillColour now (needed because colour is passed on as a vector, not fill_HR)
     fill_HR = map(fillTemp.heading(), -PI, PI, 0, 360);
     flatness = map(twistAngle, -PI/12, PI/12, 1, 1); // NOTE: This should probably be a seperate function 'shapetwist'
-    
+
     fillTemp.rotate(strokeOffset); // stroke_HR has opposite heading to fill_HR. Angle offset could be mapped from something...
-    //stroke_HR = map(fillTemp.heading(), -PI, PI, 0, 360); 
+    //stroke_HR = map(fillTemp.heading(), -PI, PI, 0, 360);
   }
-  
+
   void velTwist() { // For linear movement, adds an angular offset to the velocity vector, causing spirals
     PVector twist = velocity.copy();
     twist.normalize();
     float twistAngle = map(r, rStart, rMax, PI/360, 0);
     if (handedness >= 0.5) {twistAngle *= -1; }
-    twist.rotate(twistAngle); 
+    twist.rotate(twistAngle);
     velocity.add(twist);
     velocity.normalize();
   }
-   
-  void display() { 
+
+  void display() {
     if (greyscale) {
       stroke(stroke_HR); //stroke = Greyscale, 100% Alpha
       //stroke(stroke_HR, stroke_Alpha); // stroke = Greyscale
@@ -345,8 +279,8 @@ class Cell {
       fill(fill_HR, fill_SG, fill_BB, fill_Alpha); // fill = Colour
     }
     //if (!fertile) {noStroke();}
-    //noFill(); 
-          
+    //noFill();
+
     if (stepped) { // Will only draw ellipse when toggle is true, giving a stepped effect. See develop();
       if (toggle) {
       float angle = velocity.heading();
@@ -372,66 +306,66 @@ class Cell {
   }
 
   void checkCollision(Cell other) {       // Method receives a Cell object 'other' to get the required info about the collidee
-    if (fertile) {                        // Collision is only checked on fertile cells. 
+    if (fertile) {                        // Collision is only checked on fertile cells.
                                           // This is a hack to prevent young spawn from colliding with their parents. Is already prevented in Colony by age-limit (20)
       PVector distVect = PVector.sub(other.position, position); // Static vector to get distance between the cell & other
-    
+
       // calculate magnitude of the vector separating the balls
       float distMag = distVect.mag();
-      
+
       if (distMag < (r + other.r)) { // Test to see if a collision has occurred : is distance < sum of cell radius + other cell radius?
-        
+
         //growth *= -1;         // Trying an idea - collision causes growthrate to toggle, even for infertile cells. See below.
         //other.growth *= -1;
-        
+
         //grow = false;         // Trying an idea - stop growing on collision
         //other.grow = false;
         //move = false;         // Trying an idea - stop moving on collision
         //other.move = false;
-                
+
         if (fertile && other.fertile) { // Test to see if both cell & other are fertile
-            
+
          //growth *= -1;         // Collision resulting in spawn causes growth-rate to toggle.
          //other.growth *= -1;
-          
+
          // Update radius's    // Trying an idea - collision causes radius to shrink
          //r *= 0.1;
          //other.r *= 0.1;
-          
+
          // Decrease collision counters. NOTE Only done on spawn, so is more like a 'spawn limit'
          collCount --;
          other.collCount --;
-                  
+
          // Calculate position for spawn based on PVector between cell & other (leaving 'distVect' unchanged, as it is needed later)
          PVector spawnPos = distVect.copy();  // Create spawnPos as a copy of the (already available) distVect which points from parent cell to other
          spawnPos.normalize();
          spawnPos.mult(r);               // The spawn position is located at parent cell's radius
          spawnPos.add(position);
-          
+
          // Calculate velocity vector for spawn as being centered between parent cell & other
-         PVector spawnVel = velocity.copy(); // Create spawnVel as a copy of parent cell's velocity vector 
+         PVector spawnVel = velocity.copy(); // Create spawnVel as a copy of parent cell's velocity vector
          spawnVel.add(other.velocity);       // Add dad's velocity
          spawnVel.normalize();               // Normalize to leave just the direction and magnitude of 1 (will be multiplied later)
-          
+
          // Calculate colour vector for spawn
          PVector spawnCol = fill_Colour.copy(); // Create spawnCol by copying the current cell's colour vector
          spawnCol.add(other.fill_Colour);       // Add the other cell's colour vector (for heading)
          spawnCol.normalize();          // Normalize to magnitude = 1
          float spawnMag = (fill_Colour.mag() + other.fill_Colour.mag())/2; // New magnitude is average of mum & dad. Could this be the culprit? //<>// //<>//
          spawnCol.mult(spawnMag);       // Give spawnCol the averaged magnitude
-          
+
          // Calculate rStart for child;
          rStart = r; // Spawn starts with same radius as current r (& resets fertility at the same time)
          other.rStart = other.r; // Resets fertility for other too
-          
+
          // Call spawn method (in Colony) with the new parameters for position, velocity and fill-colour etc.)
          colony.spawn(position.x, position.y, spawnVel.x, spawnVel.y, spawnCol.heading(), spawnCol.mag(), rStart);
-                   
+
          // Reset fertility counter (from before fertile became boolean)
          //fertility = 0;
          //other.fertility = 0;
         }
-      
+
       // get angle of distVect
       float theta  = distVect.heading();
       // precalculate trig values
@@ -487,7 +421,7 @@ class Cell {
       velocity.x = cosine * vFinal[0].x - sine * vFinal[0].y;
       velocity.y = cosine * vFinal[0].y + sine * vFinal[0].x;
       other.velocity.x = cosine * vFinal[1].x - sine * vFinal[1].y;
-      other.velocity.y = cosine * vFinal[1].y + sine * vFinal[1].x;   
+      other.velocity.y = cosine * vFinal[1].y + sine * vFinal[1].x;
       }
     }
   }
@@ -501,7 +435,7 @@ class Cell {
      text("r:" + r, position.x, position.y);
      text("rStart:" + rStart, position.x, position.y+10);
      //text("fill_HR:" + fill_HR, position.x, position.y);
-     
+
      //text("rMax:" + rMax, position.x, position.y+30);
      //text("growth:" + growth, position.x, position.y+30);
      //text("age:" + age, position.x, position.y+20);
@@ -517,4 +451,4 @@ class Cell {
 
 
 
-}  
+}
