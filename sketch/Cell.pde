@@ -172,262 +172,130 @@ class Cell {
       strokeColor = color(stroke_Htwisted, stroke_S, stroke_B); //stroke colour is updated with new hue value
     }
   }
-  
-  void checkBoundaryRebound() {
-    if (position.x > width-r) {
-      position.x = width-r;
-      velocity.x *= -1;
-    }
-    else if (position.x < r) {
-      position.x = r;
-      velocity.x *= -1;
-    }
-    else if (position.y > height-r) {
-      position.y = height-r;
-      velocity.y *= -1;
-    }
-    else if (position.y < r) {
-      position.y = r;
-      velocity.y *= -1;
-    }
-  }
 
   void checkBoundaryWraparound() {
-    if (position.x > width+r) {
-      position.x = -r;
+    if (position.x > width + r * flatness) {
+      position.x = -r * flatness;
     }
-    else if (position.x < -r) {
-      position.x = width+r;
+    else if (position.x < -r * flatness) {
+      position.x = width + r * flatness;
     }
-    else if (position.y > height+r) {
-      position.y = -r;
+    else if (position.y > height + r * flatness) {
+      position.y = -r * flatness;
     }
-    else if (position.y < -r) {
-      position.y = height+r;
+    else if (position.y < -r * flatness) {
+      position.y = height + r * flatness;
     }
   }
 
- //<>//
   // Death
   boolean dead() {
-    //if (velocity.mag() == 0) {return true; } // Death if stationary
-    //if (collCount <= 0) {return true; } // Death if collision limit reached
-    if (r < rMin) {return true; } // Death if size lower limit reached
-    //if (health <0) {return true; } // Death if no health left
+    if (age >= lifespan) {return true;} // Death by old age (regardless of size, which may remain constant)
+    if (position.x > width + r * flatness || position.x < -r * flatness || position.y > height + r * flatness || position.y < -r * flatness) {return true;} // Death if move beyond canvas boundary
     if (position.x > width+r ||  position.x < -r || position.y > height+r ||  position.y < -r) { return true;  } // Death if move beyond canvas boundary
     else { return false; }
     //return false; // Use if no death
   }
 
-
-  // Copied from the original Evolution EcoSystem sketch
-  // NOT IN USE
-  // Called from 'run' in colony to determine if a cell will spontaneously (& asexually) reproduce
-  // Note: instead of void, the method returns a 'Cell' object
-  Cell reproduce() {
-    if (random(1) < 0.003) {
-      DNA childDNA = dna.copy();    // Child DNA is exact copy of single parent
-      // childDNA.geneMutate(0.01); // DNA can mutate if a random number is less than 0.01
-      return new Cell (position, velocity, fill_Colour, childDNA, rStart); // this is a pretty cool trick!
-    }
-    else {
-      return null; // If no child was spawned
-    }
-  }
-
-  void colourTwist() { // To calculate fill colour H (in HSB) from PVector 'fill_Colour' heading. Assumes fill_HR is started from fill_colour PVector
-    float twistAngle = map(r, rMin, rStart, -PI/12, PI/12);  // (rMax*PI/rMaxMax*4)
-    PVector fillTemp = fill_Colour.copy();
-    fillTemp.rotate(twistAngle); // Temporary vector to avoid the need to rotate back again
-    spawnCol = fillTemp.copy();  // Set the spawnCol at the 'twisted' fillColour now (needed because colour is passed on as a vector, not fill_HR)
-    fill_HR = map(fillTemp.heading(), -PI, PI, 0, 360);
-    flatness = map(twistAngle, -PI/12, PI/12, 1, 1); // NOTE: This should probably be a seperate function 'shapetwist'
-
-    fillTemp.rotate(strokeOffset); // stroke_HR has opposite heading to fill_HR. Angle offset could be mapped from something...
-    //stroke_HR = map(fillTemp.heading(), -PI, PI, 0, 360);
-  }
-
   void display() {
-    if (greyscale) {
-      stroke(stroke_HR); //stroke = Greyscale, 100% Alpha
-      //stroke(stroke_HR, stroke_Alpha); // stroke = Greyscale
-      //stroke(fill_HR, stroke_Alpha);   // stroke = Greyscale (use fill colour)
-      fill(fill_HR, fill_Alpha); // fill = Greyscale
-    }
-    else {
-      stroke(stroke_HR, stroke_SG, stroke_BB, stroke_Alpha); // stroke = Colour
-      //stroke(fill_HR, stroke_SG, stroke_BB, stroke_Alpha);   // stroke = Colour (use fill colour)
-      fill(fill_HR, fill_SG, fill_BB, fill_Alpha); // fill = Colour
-    }
-    //if (!fertile) {noStroke();}
-    //noFill();
+    if (p.strokeDisable) {noStroke();} else {stroke(hue(strokeColor), saturation(strokeColor), brightness(strokeColor), stroke_Alpha);}
+    if (p.fillDisable) {noFill();} else {fill(hue(fillColor), saturation(fillColor), brightness(fillColor), fill_Alpha);}
 
-    if (stepped) { // Will only draw ellipse when toggle is true, giving a stepped effect. See develop();
-      if (toggle) {
-      float angle = velocity.heading();
-      pushMatrix();
-      translate(position.x,position.y);
-      rotate(angle);
-      ellipse(0, 0, r, r*flatness);
-      popMatrix();
-      toggle = false;
+    float angle = velocity.heading();
+    pushMatrix();
+    translate(position.x,position.y);
+    rotate(angle);
+    if (!p.stepped) {
+      ellipse(0, 0, r, r * flatness);
+      if (p.nucleus && drawStepN < 1) {
+        if (fertile) {fill(0); ellipse(0, 0, cellEndSize, cellEndSize * flatness);}
+        else {fill(255); ellipse(0, 0, cellEndSize, cellEndSize * flatness);}
       }
     }
-    else {
-      float angle = velocity.heading();
-      pushMatrix();
-      translate(position.x,position.y);
-      rotate(angle);
+    else if (drawStep < 1) { // stepped=true, step-counter is active for cell, draw only when counter=0
       ellipse(0, 0, r, r*flatness);
-      if (fertile) {fill(0); ellipse(0, 0, rMin, rMin);} else {fill(255); ellipse(0, 0, rMin, rMin);}
-      //if (fertile) {fill(255); ellipse(0, 0, rMin, rMin);} else {fill(255, seed_Alpha); ellipse(0, 0, rMin, rMin);}
-      //if (fertile) {fill(255); noStroke(); ellipse(0, 0, rMin, rMin);} else {stroke(255); noFill(); ellipse(0, 0, rMin, rMin);}
-      popMatrix();
+      if (p.nucleus && drawStepN < 1) { // Nucleus is always drawn when cell is drawn (no step-counter for nucleus)
+        if (fertile) {
+          fill(0); ellipse(0, 0, cellEndSize, cellEndSize * flatness);
+        }
+        else {
+          fill(255); ellipse(0, 0, cellEndSize, cellEndSize * flatness);
+        }
+      }
     }
+    popMatrix();
   }
 
   void checkCollision(Cell other) {       // Method receives a Cell object 'other' to get the required info about the collidee
-    if (fertile) {                        // Collision is only checked on fertile cells.
-                                          // This is a hack to prevent young spawn from colliding with their parents. Is already prevented in Colony by age-limit (20)
       PVector distVect = PVector.sub(other.position, position); // Static vector to get distance between the cell & other
-
-      // calculate magnitude of the vector separating the balls
-      float distMag = distVect.mag();
-
-      if (distMag < (r + other.r)) { // Test to see if a collision has occurred : is distance < sum of cell radius + other cell radius?
-
-        //growth *= -1;         // Trying an idea - collision causes growthrate to toggle, even for infertile cells. See below.
-        //other.growth *= -1;
-
-        //grow = false;         // Trying an idea - stop growing on collision
-        //other.grow = false;
-        //move = false;         // Trying an idea - stop moving on collision
-        //other.move = false;
-
-        if (fertile && other.fertile) { // Test to see if both cell & other are fertile
-
-         //growth *= -1;         // Collision resulting in spawn causes growth-rate to toggle.
-         //other.growth *= -1;
-
-         // Update radius's    // Trying an idea - collision causes radius to shrink
-         //r *= 0.1;
-         //other.r *= 0.1;
-
-         // Decrease collision counters. NOTE Only done on spawn, so is more like a 'spawn limit'
-         collCount --;
-         other.collCount --;
-
-         // Calculate position for spawn based on PVector between cell & other (leaving 'distVect' unchanged, as it is needed later)
-         PVector spawnPos = distVect.copy();  // Create spawnPos as a copy of the (already available) distVect which points from parent cell to other
-         spawnPos.normalize();
-         spawnPos.mult(r);               // The spawn position is located at parent cell's radius
-         spawnPos.add(position);
-
-         // Calculate velocity vector for spawn as being centered between parent cell & other
-         PVector spawnVel = velocity.copy(); // Create spawnVel as a copy of parent cell's velocity vector
-         spawnVel.add(other.velocity);       // Add dad's velocity
-         spawnVel.normalize();               // Normalize to leave just the direction and magnitude of 1 (will be multiplied later)
-
-         // Calculate colour vector for spawn
-         PVector spawnCol = fill_Colour.copy(); // Create spawnCol by copying the current cell's colour vector
-         spawnCol.add(other.fill_Colour);       // Add the other cell's colour vector (for heading)
-         spawnCol.normalize();          // Normalize to magnitude = 1
-         float spawnMag = (fill_Colour.mag() + other.fill_Colour.mag())/2; // New magnitude is average of mum & dad. Could this be the culprit? //<>// //<>//
-         spawnCol.mult(spawnMag);       // Give spawnCol the averaged magnitude
-
-         // Calculate rStart for child;
-         rStart = r; // Spawn starts with same radius as current r (& resets fertility at the same time)
-         other.rStart = other.r; // Resets fertility for other too
-
-         // Call spawn method (in Colony) with the new parameters for position, velocity and fill-colour etc.)
-         colony.spawn(position.x, position.y, spawnVel.x, spawnVel.y, spawnCol.heading(), spawnCol.mag(), rStart);
-
-         // Reset fertility counter (from before fertile became boolean)
-         //fertility = 0;
-         //other.fertility = 0;
-        }
-
-      // get angle of distVect
-      float theta  = distVect.heading();
-      // precalculate trig values
-      float sine = sin(theta);
-      float cosine = cos(theta);
-
-      // posTemp will hold rotated cell positions. You just need to worry about posTemp[1] position
-      PVector[] posTemp = { new PVector(), new PVector() };
-
-      /* this ball's position is relative to the other so you can use the vector between them (distVect) as the reference point in the rotation expressions.
-      posTemp[0].position.x and posTemp[0].position.y will initialize automatically to 0.0, which is what you want since b[1] will rotate around b[0] */
-      posTemp[1].x  = cosine * distVect.x + sine * distVect.y;
-      posTemp[1].y  = cosine * distVect.y - sine * distVect.x;
-
-      // rotate Temporary velocities
-      PVector[] vTemp = { new PVector(), new PVector() };
-
-      vTemp[0].x  = cosine * velocity.x + sine * velocity.y;
-      vTemp[0].y  = cosine * velocity.y - sine * velocity.x;
-      vTemp[1].x  = cosine * other.velocity.x + sine * other.velocity.y;
-      vTemp[1].y  = cosine * other.velocity.y - sine * other.velocity.x;
-
-      // Now that velocities are rotated, you can use 1D conservation of momentum equations to calculate  the final velocity along the x-axis.
-      PVector[] vFinal = { new PVector(), new PVector() };
-
-      // final rotated velocity for b[0]
-      vFinal[0].x = ((m - other.m) * vTemp[0].x + 2 * other.m * vTemp[1].x) / (m + other.m);
-      vFinal[0].y = vTemp[0].y;
-
-      // final rotated velocity for b[0]
-      vFinal[1].x = ((other.m - m) * vTemp[1].x + 2 * m * vTemp[0].x) / (m + other.m);
-      vFinal[1].y = vTemp[1].y;
-
-      // hack to avoid clumping (???????? How does it work, actually?)
-      posTemp[0].x += vFinal[0].x;
-      posTemp[1].x += vFinal[1].x;
-
-      // Rotate ball positions and velocities back. Reverse signs in trig expressions to rotate in the opposite direction
-      PVector[] posFinal = { new PVector(), new PVector() };
-
-      posFinal[0].x = cosine * posTemp[0].x - sine * posTemp[0].y;
-      posFinal[0].y = cosine * posTemp[0].y + sine * posTemp[0].x;
-      posFinal[1].x = cosine * posTemp[1].x - sine * posTemp[1].y;
-      posFinal[1].y = cosine * posTemp[1].y + sine * posTemp[1].x;
-
-      // update balls to screen position
-      other.position.x = position.x + posFinal[1].x;
-      other.position.y = position.y + posFinal[1].y;
-
-      position.add(posFinal[0]);
-
-      // update velocities
-      velocity.x = cosine * vFinal[0].x - sine * vFinal[0].y;
-      velocity.y = cosine * vFinal[0].y + sine * vFinal[0].x;
-      other.velocity.x = cosine * vFinal[1].x - sine * vFinal[1].y;
-      other.velocity.y = cosine * vFinal[1].y + sine * vFinal[1].x;
-      }
-    }
+      float distMag = distVect.mag();       // calculate magnitude of the vector separating the balls
+      if (distMag < (r + other.r)) { conception(other, distVect);} // Spawn a new cell
   }
 
-  void debugTextCell() { // For debug only
-     //stroke(255);
-     fill(0);
-     //textSize(12);
-     //text("Cells alive:" + colony.cells.size(), 0, 10);
-     textSize(15);
-     text("r:" + r, position.x, position.y);
-     text("rStart:" + rStart, position.x, position.y+10);
-     //text("fill_HR:" + fill_HR, position.x, position.y);
+  void conception(other, distVect) {
+    // Decrease spawn counters.
+    spawnCount --;
+    other.spawnCount --;
 
-     //text("rMax:" + rMax, position.x, position.y+30);
-     //text("growth:" + growth, position.x, position.y+30);
+    // Calculate position for spawn based on PVector between cell & other (leaving 'distVect' unchanged, as it is needed later)
+    PVector spawnPos = distVect.copy();  // Create spawnPos as a copy of the (already available) distVect which points from parent cell to other
+    spawnPos.normalize();
+    spawnPos.mult(r);               // The spawn position is located at parent cell's radius
+    spawnPos.add(position);
+
+    // Calculate velocity vector for spawn as being centered between parent cell & other
+    PVector spawnVel = velocity.copy(); // Create spawnVel as a copy of parent cell's velocity vector
+    spawnVel.add(other.velocity);       // Add dad's velocity
+    spawnVel.normalize();               // Normalize to leave just the direction and magnitude of 1 (will be multiplied later)
+
+    // Combine the DNA of the parent cells
+    childDNA = dna.combine(other.dna);
+
+    // Calculate new fill colour for child (a 50/50 blend of each parent cells)
+    childFillColor = lerpColor(fillColor, other.fillColor, 0.5);
+
+    // Calculate new stroke colour for child (a 50/50 blend of each parent cells)
+    childStrokeColor = lerpColor(strokeColor, other.strokeColor, 0.5);
+
+    // Genes for color require special treatment as I want childColor to be a 50/50 blend of parents colors
+    // I will therefore overwrite color genes with reverse-engineered values after lerping:
+    childDNA.genes[0] = map(hue(childFillColor), 0, 360, 0, 1) // Get the  lerped hue value and map it back to gene-range
+    childDNA.genes[1] = map(saturation(childFillColor), 0, 255, 0, 1) // Get the  lerped hue value and map it back to gene-range
+    childDNA.genes[2] = map(brightness(childFillColor), 0, 255, 0, 1) // Get the  lerped hue value and map it back to gene-range
+    childDNA.genes[4] = map(hue(childStrokeColor), 0, 360, 0, 1) // Get the  lerped hue value and map it back to gene-range
+    childDNA.genes[5] = map(saturation(childStrokeColor), 0, 255, 0, 1) // Get the  lerped hue value and map it back to gene-range
+    childDNA.genes[6] = map(brightness(childStrokeColor), 0, 255, 0, 1) // Get the  lerped hue value and map it back to gene-range
+
+    //childDNA.mutate(0.01); // Child DNA can mutate. HACKED! Mutation is temporarily disabled!
+
+    // Call spawn method (in Colony) with the new parameters for position, velocity, colour & starting radius)
+    // Note: Currently no combining of parent DNA
+    colony.spawn(spawnPos, spawnVel, childDNA);
+
+
+    //Reduce fertility for parent cells by squaring them
+    fertility *= fertility;
+    fertile = false;
+    other.fertility *= other.fertility;
+    other.fertile = false;
+  }
+
+  void cellDebugger() { // For debug only
+     int rowHeight = 15;
+     fill(0);
+     textSize(rowHeight);
+     text("r:" + r, position.x, position.y + rowHeight * 0);
+     text("cellStartSize:" + cellStartSize, position.x, position.y + rowHeight * 1);
+     //text("fill_HR:" + fill_HR, position.x, position.y);
+     //text("rMax:" + rMax, position.x, position.y);
+     //text("growth:" + growth, position.x, position.y);
      //text("age:" + age, position.x, position.y+20);
-     text("fertile:" + fertile, position.x, position.y+30);
-     text("fertility:" + fertility, position.x, position.y+40);
-     text("collCount:" + collCount, position.x, position.y+50);
+     //text("fertile:" + fertile, position.x, position.y rowHeight * 2);
+     //text("fertility:" + fertility, position.x, position.y rowHeight * 3);
+     //text("spawnCount:" + collCount, position.x, position.y rowHeight * 4);
      //text("x-velocity:" + velocity.x, position.x, position.y+0);
      //text("y-velocity:" + velocity.y, position.x, position.y+10);
      //text("velocity heading:" + velocity.heading(), position.x, position.y+20);
-     //println("X: " + position.x + "   Y:" + position.y + "   r:" + r + "   m:" + m + "  collCount:" + collCount);
-     //println("X: " + position.x + "   Width+r:" + (width+r) + "   Y:" + position.y  + "   height+r:" +(height+r) + "  r:" + r);
      }
 
 
