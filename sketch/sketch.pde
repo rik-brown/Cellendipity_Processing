@@ -32,7 +32,7 @@ boolean transforming = true;  // Changing shape (not currently doing anything at
 boolean greyscale = false; // (CELL) For greyscale or colour
 boolean colouring = false;  // Changing colour
 boolean colourtwisting = false; // A sub-category of colouring
-boolean rebounding = true; // Bounce off the walls (else wraparound)
+boolean wraparound = true; // Bounce off the walls (else wraparound)
 
 
 int bkgColGrey ;  // Background colour for greyscale
