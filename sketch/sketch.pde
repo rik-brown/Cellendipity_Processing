@@ -6,111 +6,138 @@
 * Run once with randomised values and output a twitter-friendly image file once the colony has run it's course (or a time-limit is reached)
 */
 
-Colony colony;      // A colony object
+Colony colony;      // A Colony object called 'colony'
+Parameters p;       // A Parameters object called 'p'
 
-boolean greyscaleON = true;
-boolean screendumpON = false;
-boolean veilDrawON = false;
-boolean veilRepopulateON = false;
+ greyscaleON = true; // keep for now
+ screendumpON = false;
+ veilDrawON = false;
+ veilRepopulateON = false;
 String screendumpPath = "C:/Richard/Personal/Code/Processing_WORK/Coloured_Cells/Gallery/Better_Code/00_05/######.png";
 
 //MOVED FROM COLONY in v00.05
-int colonyMin = 10;
-int colonyMax = 500;
+ colonyMin = 10;
+ colonyMax = 500;
 
 
 
 //MOVED FROM CELL in v00.05
 //ALL THESE CONTROLS ARE EXPECTED TO OPERATE AT COLONY-LEVEL
 //(EQUAL FOR ALL CELLS)
-boolean perlin = true;  // Movement is either perlin or linear (could this be switched to 'degrees of' - 0-100% slider)?
-boolean spiralling = false; // A sub-category of movement (could this be switched to 'degrees of' - 0-100% slider)?
-boolean steppedOld = false; // A sub-category of movement. Seems to be a bit broken... (v00.05)
-boolean stepped = false; // A sub-category of movement
-boolean growing = true; // Changing size
-boolean transforming = true;  // Changing shape (not currently doing anything at all)
-boolean greyscale = false; // (CELL) For greyscale or colour
-boolean colouring = false;  // Changing colour
-boolean colourtwisting = false; // A sub-category of colouring
-boolean wraparound = true; // Bounce off the walls (else wraparound)
+  rStartMin = 50; // Minimum starting radius
+ rStartMax = 50; // Maximum starting radius
+ rStart = random(rStartMin, rStartMax);  // Starting radius
 
-
-int bkgColGrey ;  // Background colour for greyscale
-
-int bkgColH;      // Background colour for HSB colour (H)
-int bkgColS;      // Background colour for HSB colour (S)
-int bkgColB;      // Background colour for HSB colour (B)
-
-int rStartMin = 50; // Minimum starting radius
-int rStartMax = 50; // Maximum starting radius
-float rStart = random(rStartMin, rStartMax);  // Starting radius
-
-int colSizeMin = 10;  // Minimum colony size
-int colSizeMax = 40; // Maximum colony size
-
-PVector col;        // PVector col needs to be declared to allow for random picker
-
-void setup() {
+ void setup() {
+  colorMode(HSB, 360, 255, 255, 255);
   fullScreen();
-
   //size(1000, 1000); // debug
-  //frameRate(3);   // debug
-
-  colorMode(HSB, 360, 100, 100, 100);
-  smooth();
   ellipseMode(RADIUS);
-
-  refreshBackgroundColour();
-
-  if (greyscaleON) {background(bkgColGrey); } else {background(bkgColH, bkgColS, bkgColB, 255);}
-
-  populateColony(); //Creates a colony with initial population of cells
+  p = new Parameters();
+  if (p.greyscaleON) {background(p.bkgColGrey); } else {background(p.bkgColor);}
+  if (p.debug) {frameRate(10);}   // debug
+  colony = new Colony(p.colonySize);
 }
 
 void draw() {
-  //background(bkgColGrey); // To flush the background every frame
-  if (veilDrawON) {veil();}     // To lay a transparent 'veil' over the background every frame
-  colony.run();    //<>//
-  manageColony();
-  //println(colony.cells.size()); // debug
+  if (p.trailMode == 1 || p.debug) {background(p.bkgColor);}
+  if (p.trailMode == 2) {trails();}
+  colony.run();
+  if (colony.cells.size() == 0) { if (keyIsPressed || p.autoRestart) {populateColony(); } } // Repopulate the colony when all the cells have died
+  }
+
+  void populateColony() {
+    background(p.bkgColor); // Refresh the background
+    colony.cells = [];
+    colony = new Colony(p.colonySize);
+  }
+
+  void trails() {
+    blendMode(DIFFERENCE);
+    noStroke();
+    fill(1);
+    rect(-1, -1, width+1, height+1);
+    blendMode(BLEND);
+    fill(255);
+  }
+
+class Parameters {
+   colonySize;
+   strainSize;
+   numStrains;
+   trailMode;
+   bkgColGrey;
+
+   centerSpawn;
+   autoRestart;
+   fillDisable;
+   strokeDisable;
+   nucleus;
+   stepped;
+   wraparound;
+   debug;
+
+  color bkgColor;
+
+   fill_HTwist;
+   fill_STwist;
+   fill_BTwist;
+   fill_ATwist;
+   stroke_HTwist;
+   stroke_STwist;
+   stroke_BTwist;
+   stroke_ATwist;
+   stepSize;
+   stepSizeN;
+
+  Parameters() {
+    colonySize = int(random (20,80)); // Max number of cells in the colony
+    strainSize = int(random(1,10)); // Number of cells in a strain
+    numStrains = int(random(1,10)); // Number of strains (a group of cells sharing the same DNA)
+
+    centerSpawn = false; // true=initial spawn is width/2, height/2 false=random
+    autoRestart = false; // If true, will not wait for keypress before starting anew
+
+    bkgColor = color(bkgColHSV.h, bkgColHSV.s*255, bkgColHSV.v*255); // Background colour
+
+    fill_HTwist = 0;
+    fill_STwist = 255;
+    fill_BTwist = 128;
+    fill_ATwist = 255;
+    stroke_HTwist = 0;
+    stroke_STwist = 255;
+    stroke_BTwist = 128;
+    stroke_ATwist = 255;
+    bkgColGrey = 128;
+
+    fillDisable = false;
+    strokeDisable = false;
+    greyscaleON = false;
+    nucleus = false;
+
+    stepSize = 0;
+    stepSizeN = 00;
+    stepped = false;
+
+    wraparound = true;
+    trailMode = 3; // 1=none, 2 = blend, 3 = continuous
+
+    restart = function () {colony.cells = []; populateColony();};
+    randomRestart = function () {randomizer(); colony.cells = []; populateColony();};
+    debug = false;
+
+  }
 }
 
-void refreshBackgroundColour() {
-  bkgColGrey = 128;                 // Fixed background colour (greyscale)
-  //bkgColGrey = int(random(255));    // Random background colour (greyscale)
 
-  //bkgColH = 0;                      // Fixed background colour for HSB colour (H)
-  //bkgColS = 0;                      // Fixed background colour for HSB colour (S)
-  //bkgColB = 0;                      // Fixed background colour for HSB colour (B)
 
-  //bkgColH = int(random(255));       // Random background colour for HSB colour (H)
-  //bkgColS = int(random(255));       // Random background colour for HSB colour (S)
-  //bkgColB = int(random(255));       // Random background colour for HSB colour (B)
 
-  bkgColH = int(random(255));       // Random background colour for HSB colour (H)
-  bkgColS = int(random(10, 128));   // Random background colour for HSB colour (S) (PALE)
-  bkgColB = int(random(200, 255));  // Random background colour for HSB colour (B) (PALE)
-}
-
-void veil() {
-  int transparency = 4; // 255 is fully opaque, 1 is virtually invisible
-  noStroke();
-  if (greyscaleON) {fill(bkgColGrey, transparency);} else {fill(bkgColH, bkgColS, bkgColB, transparency);}
-  rect(-1, -1, width+1, height+1);
-}
-
-void populateColony()  {
-  float rStart = random(rStartMin, rStartMax);
-  //colony = new Colony(int(random(colSizeMin, colSizeMax)), rStart); //Could Colony receive a color-seed value (that is iterated through in a for- loop?) (or randomized?)
-  //colony = new Colony(1, rStart); // Populate the colony with a single cell. Useful for debugging
-  colony = new Colony(1, 50);
-}
 
 void manageColony() {
   if (colony.cells.size() == 0) { //  If an extinction has occurred...
     if (screendumpON) {screendump();} //WARNING! ALWAYS repopulate & restart the colony after doing this once!
     refreshBackgroundColour(); // Select a new colour for the background
-    if (veilRepopulateON) {veil();}      // Draw a veil over the previous colony to gradually fade it into oblivion
+    if (veilRepopulateON) {veil();}      // Draw a veil over the previous colony to gradually fade it o oblivion
     else {
      if (greyscaleON) {
        background(bkgColGrey); }
@@ -124,60 +151,30 @@ void manageColony() {
 
 // We can add a creature manually if we so desire
 void mousePressed() {
+  PVector mousePos = new PVector (mouseX, mouseY);
   PVector vel = PVector.random2D();
-  //PVector col = PVector.random2D();
-  float colourPicker = random(1); // To select between Red, Green or Blue with equal probability
-      if (colourPicker <= 0.333){
-        col = PVector.fromAngle(PI); } // This angle gived RED (maps to 0)
-        else if (colourPicker <= 0.666){
-        col = PVector.fromAngle(PI/3); } // This angle gived BLUE (maps to 240)
-        else {
-        col = PVector.fromAngle(-PI/3); } // This angle gived GREEN (maps to 120)
-  colony.spawn(mouseX, mouseY, vel.x, vel.y, col.heading(), col.mag(), rStart);
+  DNA dna = new DNA();
+  colony.spawn(mousePos, vel, dna);
 }
 
 void mouseDragged() {
+  PVector mousePos = new PVector (mouseX, mouseY);
   PVector vel = PVector.random2D();
-  //PVector col = PVector.random2D();
-  float colourPicker = random(1); // To select between Red, Green or Blue with equal probability
-      if (colourPicker <= 0.333){
-        col = PVector.fromAngle(PI); } // This angle gived RED (maps to 0)
-        else if (colourPicker <= 0.666){
-        col = PVector.fromAngle(PI/3); } // This angle gived BLUE (maps to 240)
-        else {
-        col = PVector.fromAngle(-PI/3); } // This angle gived GREEN (maps to 120)
-  colony.spawn(mouseX, mouseY, vel.x, vel.y, col.heading(), col.mag(), rStart);
+  DNA dna = new DNA();
+  colony.spawn(mousePos, vel, dna);
 }
 
-void redSpawn() {
-  PVector pos = new PVector (random(width), random(height));
-  PVector vel = PVector.random2D();
-  col = PVector.fromAngle(PI); // This angle gived RED (maps to 0)
-  colony.spawn(pos.x, pos.y, vel.x, vel.y, col.heading(), col.mag(), rStart);
-}
-
-void greenSpawn() {
-  PVector pos = new PVector (random(width), random(height));
-  PVector vel = PVector.random2D();
-  col = PVector.fromAngle(-PI/3); // This angle gived GREEN (maps to 120)
-  colony.spawn(pos.x, pos.y, vel.x, vel.y, col.heading(), col.mag(), rStart);
-}
-
-void blueSpawn() {
-  PVector pos = new PVector (random(width), random(height));
-  PVector vel = PVector.random2D();
-  col = PVector.fromAngle(PI/3); // This angle gived BLUE (maps to 240)
-  colony.spawn(pos.x, pos.y, vel.x, vel.y, col.heading(), col.mag(), rStart);
-}
 void screendump() {
   saveFrame(screendumpPath);
 }
 
 void keyReleased() {
-  if (key == 'r') {redSpawn(); }
-  if (key == 'g') {greenSpawn(); }
-  if (key == 'b') {blueSpawn(); }
-  if (key == 's') {screendump(); }
-  if (key == 'd') {colony.cullAll(); }
-  if (key == 'b') {background(bkgColGrey); }
+  if (key === '1') {p.trailMode = 1;}
+  if (key === '2') {p.trailMode = 2;}
+  if (key === '3') {p.trailMode = 3;}
+  if (key == 'r') {colony.cells = [];}
+  if (key == 'b') {background(p.bkgColGrey); }
+  if (key == 'd') {p.debug = !p.debug; }
+  if (key == 'n') {p.nucleus = !p.nucleus; }
+  if (key == 's') {screendump();}
 }
