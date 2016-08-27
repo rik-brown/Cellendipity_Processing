@@ -18,72 +18,44 @@ class Colony {
         cells.add(new Cell(pos, vel, dna)); // Add new Cell with DNA
       }
     }
-   }
+  }
 
+// Spawn a new cell (called by e.g. MousePressed in main, accepting mouse coords for start position)
+  void spawn(PVector mousePos, PVector vel, DNA dna_) {
+    cells.add(new Cell(mousePos, vel, dna));
+  }
 
-  void spawn(float xpos, float ypos, float xvel, float yvel, float hue, float sat, float rStart) {
-  // Spawn a new cell (called by e.g. MousePressed in main, accepting mouse coords for start position)
-    PVector pos = new PVector(xpos, ypos);
-    PVector vel = new PVector(xvel, yvel);
-
-    PVector fillCol = PVector.fromAngle(hue); //Create a new PVector from the hue angle
-    fillCol.setMag(sat);
-    DNA dna = new DNA();
-    cells.add(new Cell(pos, vel, fillCol, dna, rStart));
-    debugTextColony();  // Debug only
-  } // closes spawn method
-
-
-
-  void run() {        // Run the colony
-
-    //debugTextColony();  // Debug only
-
+// Run the colony
+  void run() {
+    if (p.debug) {colonyDebugger(); }
     for (int i = cells.size()-1; i >= 0; i--) {  // Iterate backwards through the ArrayList because we are removing items
-      Cell c = cells.get(i);                     // Get one cell at a time //<>// //<>// //<>// //<>// //<>//
-      c.run();                                   // Run it (grow, move, boundaries etc.)
-      if (c.dead()) {
-        cells.remove(i);
-        debugTextColony();  // Debug only
-      }         // If it has died, remove it
+      Cell c = cells.get(i);                     // Get one cell at a time
+      c.run();                                   // Run the cell (grow, move, spawn, check position vs boundaries etc.)
+      if (c.dead()) {cells.remove(i);}           // If the cell has died, remove it from the array
 
       // Iteration to check collision between current cell(i) and the rest
-      if (cells.size() <= colonyMax) {                          // Don't check for collisons if there are too many cells (wait until some die off)
+      if (cells.size() <= colonyMax && c.fertile) {             // Don't check for collisons if there are too many cells (wait until some die off)
         for (int others = i-1; others >= 0; others--) {         // Since main iteration (i) goes backwards, this one needs to too
           Cell other = cells.get(others);                       // Get the other cells, one by one
-          //stroke(128, 32);
-          //line (c.position.x, c.position.y, other.position.x, other.position.y); // old thing, playing around
-          // c.checkCollision(other); No age-limit, use wisely
-          if (c.age > 20 && other.age > 20) { c.checkCollision(other); } // Don't check for collisions between newly-spawned cells
-        } // closes for - others - loop
-      } // closes -if-
-    } // closes for - i - loop
-
-   if (cells.size() > colonyMax) { cull(50); }   // If there are still too many cells, remove some by 'culling' (not actually active now)
-
-  } // End of 'run' method
-
-
+          if (other.fertile) { c.checkCollision(other); }       // Only check for collisions when both cells are fertile
+        }
+      }
+    }
+    // If there are too many cells, remove some by 'culling'
+   if (cells.size() > colonyMaxSize) { cull(colonyMaxSize); }
+  }
 
   void cull(int div)  {  // To remove a proportion of the cells from (the oldest part of) the colony
     int cull = (cells.size()/div);
-    //for (int i = cull; i >= 0; i--) { cells.remove(i); } // Not in use - only active part is to draw a transparent 'veil' when method is called.
-    //background(0);
-    //fill(255, 1);
-    //rect(-1, -1, width+1, height+1);
+    for (int i = cull; i >= 0; i--) {cells.remove(i); }
   }
 
-  void cullAll()  {    // To remove ALL cells from the colony
-    cells.clear();
-  }
-
-  void debugTextColony() {  // For debug only
+  void colonyDebugger() {  // Displays some values as text at the top left corner (for debug only)
     noStroke();
-    fill(128);
-    rect(0,0,240,22);
+    fill(0);
+    rect(0,0,250,20);
     fill(360);
-    textSize(12);
-    text("Nr. cells: " + cells.size() + " MinLimit:" + colonyMin+ " MaxLimit:" + colonyMax, 10, 20);
+    textSize(16);
+    text("Nr. cells: " + cells.size() + " MaxLimit:" + colonyMaxSize, 10, 18);
   }
-
-} // End of 'Colony' class
+}

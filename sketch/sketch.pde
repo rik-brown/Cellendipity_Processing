@@ -48,7 +48,7 @@ void draw() {
 
   void populateColony() {
     background(p.bkgColor); // Refresh the background
-    colony.cells = [];
+    colony.cells.clear();
     colony = new Colony(p.colonySize);
   }
 
