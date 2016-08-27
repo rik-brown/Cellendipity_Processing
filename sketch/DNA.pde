@@ -10,49 +10,36 @@
 
 class DNA {
 
-  // The genetic sequence
-  float[] genes;  // 'genes' is a standard array, initially containing float values in the range (0-1). It could also containg, for example variables for colour
-  
+  float[] genes;  // 'genes' is an array of float values in the range (0-1)
+
   // Constructor (makes a random DNA)
-  DNA() {
-    genes = new float[14];  // DNA contains an array called 'genes' with [4] float values  
-    for (int i = 0; i < genes.length; i++) {
-      genes[i] = random(0,1);    // Each gene is a random float value between 0 and 1      
-    } // closes for - i - loop
-    
-  } // closes 'DNA' method
-  
-  DNA(float[] newgenes) { // Not sure about this one....
-                          // A method called DNA accepting the array called newgenes?
-    genes = newgenes;     // The existing array 'genes' is filled by 'newgenes' ?
+  DNA(float[] newgenes) {
+    if (newgenes) {genes = newgenes;}
+    // Tests to see if the function is called with a newgenes passed in or not:
+    // if it is, simply return a copy as this.genes
+    // if not, populate this.genes with 'numGenes' new genes
+    else {
+      genes = new float[12];  // DNA contains an array called 'genes' with [4] float values
+      for (int i = 0; i < genes.length; i++) {
+        genes[i] = random(0,1);    // Each gene is a random float value between 0 and 1
+      }
+    }
   }
-  
-  
-  
-  DNA copy() {            // 'copy' is a method which returns a copy of the DNA which are put in
-                          // It is called by the method 'reproduce' in Cell to create 'childDNA' which are a copy of the parent
-    
+
+  DNA combine(DNA otherDNA_) { // Returns a new set of DNA consisting of randomly selected genes from both parents
     float[] newgenes = new float[genes.length];
-    //arraycopy(genes,newgenes);
-    // JS mode not supporting arraycopy
-    
     for (int i = 0; i < newgenes.length; i++) {
-      newgenes[i] = genes[i];
+      if (random() < 0.5) {newgenes[i] = genes[i];}
+      else {newgenes[i] = otherDNA_.genes[i];} // 50/50 chance of copying gene from either 'mother' or 'other'
     }
     return new DNA(newgenes);
   }
-  
-  
+
   void geneMutate(float m) {
     // Using the received mutation probability 'm', picks new, fully random values in array spots
     // This method is called from the 'reproduce' method in Cell
     for (int i = 0; i < genes.length; i++) {
-      if (random(1) < m) { genes[i] = random(0,1); }  
-    }  
+      if (random(1) < m) { genes[i] = random(0,1); }
+    }
   }
-
-  void newColourGenes(int fill_HR, int fill_SG, int fill_BB, int fill_Alpha, int stroke_HR, int stroke_SG, int stroke_BB, int stroke_Alpha) {
-    // Goal is to return new DNA containing the genes for spawning a new cell whose colours (fill & stroke) are a combination of the parents
-  }
-  
 } // End of DNA class
