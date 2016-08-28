@@ -22,7 +22,7 @@ class DNA {
   DNA combine(DNA otherDNA_) { // Returns a new set of DNA consisting of randomly selected genes from both parents
     float[] newgenes = new float[genes.length];
     for (int i = 0; i < newgenes.length; i++) {
-      if (random() < 0.5) {newgenes[i] = genes[i];}
+      if (random(1) < 0.5) {newgenes[i] = genes[i];}
       else {newgenes[i] = otherDNA_.genes[i];} // 50/50 chance of copying gene from either 'mother' or 'other'
     }
     return new DNA(newgenes);
