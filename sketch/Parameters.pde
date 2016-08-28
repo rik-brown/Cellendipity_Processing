@@ -40,12 +40,12 @@ class Parameters {
     strokeDisable = true;
     greyscaleON = false;
     nucleus = true;
-    stepped = false;
+    stepped = true;
     wraparound = false;
 
     strainSize = int(random(3,30)); // Number of cells in a strain
-    numStrains = int(random(1,1)); // Number of strains (a group of cells sharing the same DNA)
-    stepSize = 0;
+    numStrains = int(random(1,4)); // Number of strains (a group of cells sharing the same DNA)
+    stepSize = 10;
     stepSizeN = 0;
     trailMode = 3; // 1=none, 2 = blend, 3 = continuous
 

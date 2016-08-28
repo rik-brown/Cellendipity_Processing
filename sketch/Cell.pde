@@ -149,7 +149,8 @@ class Cell {
   }
 
   void updateSize() {
-    r = ((sin(map(maturity, 1, 0, 0, PI)))+0)*cellStartSize;
+    // r = ((sin(map(maturity, 1, 0, 0, PI)))+0)*cellStartSize;
+    r -= growth;
   }
 
   void updateFertility() {
