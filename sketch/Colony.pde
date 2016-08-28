@@ -1,17 +1,17 @@
 class Colony {
 
   // VARIABLES
-  ArrayList<Cell> cells;    // An arraylist for all the cells //<>//
+  ArrayList<Cell> cells;    // An arraylist for all the cells //<>// //<>// //<>//
   int colonyMaxSize = 300;
 
   // CONSTRUCTOR: Create a 'Colony' object, initially populated with 'num' cells
-  Colony(int colonySize) {
+  Colony() {
 
     // Create initial population of cells
     cells = new ArrayList<Cell>();                              // Initialize the arraylist
     for (int i = 0; i < p.numStrains; i++) {
       DNA dna = new DNA();
-      // if (p.centerSpawn) {PVector pos = new PVector(width/2, height/2);}  // Initial position vector is centered
+      // if (p.centerSpawn == true) {PVector pos = new PVector(width/2, height/2);}  // Initial position vector is centered
       // else {PVector pos = new PVector(random(width), random(height));} // Initial position vector is random
       PVector pos = new PVector(width/2, height/2);
       for (int j = 0; j < p.strainSize; j++) {
@@ -54,9 +54,10 @@ class Colony {
   void colonyDebugger() {  // Displays some values as text at the top left corner (for debug only)
     noStroke();
     fill(0);
-    rect(0,0,250,20);
+    rect(0,0,230,40);
     fill(360);
     textSize(16);
     text("Nr. cells: " + cells.size() + " MaxLimit:" + colonyMaxSize, 10, 18);
+    text("TrailMode: " + p.trailMode + " Debug:" + p.debug, 10, 36);
   }
 }

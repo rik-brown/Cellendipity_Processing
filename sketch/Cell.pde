@@ -73,13 +73,13 @@ class Cell {
 
   // GROWTH AND REPRODUCTION
   age = 0; // Age is 'number of frames since birth'. A new cell always starts with age = 0. From age comes maturity
-  lifespan = map(dna.genes[10], 0, 1, 1000, 2000); // Lifespan can be lowered by DNA but not increased
+  lifespan = map(dna.genes[10], 0, 1, 500, 2000);
   fertility = map(dna.genes[8], 1, 0, 0.7, 0.9); // How soon will the cell become fertile?
   maturity = map(age, 0, lifespan, 1, 0);
   spawnCount = int(map(dna.genes[10], 1, 0, 1, 5)); // Max. number of spawns
 
   // SIZE AND SHAPE
-  cellStartSize = map(dna.genes[8], 0, 1, 10, 20);
+  cellStartSize = map(dna.genes[8], 0, 1, 10, 30);
   cellEndSize = cellStartSize * map(dna.genes[9], 0, 1, 0, 0.1);
   //r = cellStartSize; // Initial value for radius
   flatness = map(dna.genes[11], 0, 1, 0.5, 2); // To make circles into ellipses. range 0.5 - 1.5
@@ -141,7 +141,7 @@ class Cell {
     velocityNoise = new PVector(vx,vy);
     xoff += step;
     yoff += step;
-    velocity = PVector.lerp(velocityLinear, velocityNoise, noisePercent); //<>//
+    velocity = PVector.lerp(velocityLinear, velocityNoise, noisePercent); //<>// //<>//
     float screwAngle = map(maturity, 0, 1, 0, spiral * TWO_PI);
     if (dna.genes[11] >= 0.5) {screwAngle *= -1;}
     velocity.rotate(screwAngle);
@@ -285,7 +285,7 @@ class Cell {
 
   void cellDebugger() { // For debug only
      int rowHeight = 15;
-     fill(0);
+     fill(360, 255);
      textSize(rowHeight);
      text("r:" + r, position.x, position.y + rowHeight * 0);
      text("cellStartSize:" + cellStartSize, position.x, position.y + rowHeight * 1);

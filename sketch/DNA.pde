@@ -9,10 +9,24 @@ class DNA {
 
   // Constructor (makes a random DNA)
   DNA() {
-      genes = new float[12];  // DNA contains an array called 'genes' with [4] float values
+      genes = new float[12];  // DNA contains an array called 'genes' with [12] float values
       for (int i = 0; i < genes.length; i++) {
-        genes[i] = random(0,1);    // Each gene is a random float value between 0 and 1
+        //genes[i] = random(0,1);    // Each gene is a random float value between 0 and 1
+        genes[i] = 0;    // Each gene = 0.5
       }
+      genes[0] = 1;
+      genes[1] = 0;
+      genes[2] = 0;
+      genes[3] = 0;
+      genes[4] = 0;
+      genes[5] = 0;
+      genes[6] = 0.1;
+      genes[7] = 0;
+      genes[8] = 0.5;
+      genes[9] = 1;
+      genes[10] = 0;
+      genes[11] = 0;
+      
     }
 
   DNA(float[] newgenes) {
