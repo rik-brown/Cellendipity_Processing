@@ -1,12 +1,7 @@
-// Borrowed from / kudos to:
-// Evolution EcoSystem
-// Daniel Shiffman <http://www.shiffman.net>
-
 // Class to describe DNA
-// =====================
-// May be used to generate individual variation between cells, whereby key parameters may be scaled by mapping them to a specific DNA
-// May also facilitate 'sexual reproduction with variation' though this requires some additional code to randomly select which genes to pick from which parent
-// This could be done by simply iterating through all the genes in the array and using a random number to select 'mum' or 'dad'
+// Borrowed from 'Evolution EcoSystem'
+// by Daniel Shiffman <http://www.shiffman.net>
+
 
 class DNA {
 

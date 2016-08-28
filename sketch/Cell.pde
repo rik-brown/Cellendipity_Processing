@@ -10,6 +10,7 @@ class Cell {
   float age;       // Age (nr. of frames since birth)
   float lifespan;
   float fertility; // Condition for becoming fertile
+  float maturity;
   int spawnCount;
 
   // SIZE AND SHAPE
@@ -25,6 +26,7 @@ class Cell {
   PVector position;
   PVector velocityLinear;
   PVector velocityNoise;
+  PVector velocity;
   float noisePercent;
   float spiral;
   float vMax;   // multiplication factor for velocity
@@ -33,19 +35,19 @@ class Cell {
   float step;       // step size
 
   // FILL COLOUR
-  PVector fill_Colour;   // For HSB you need Hue to be the heading of a PVector
-  PVector spawnCol;      // spawnCol needs to be a GLOBAL variable
+  color fillColor;   // For HSB you need Hue to be the heading of a PVector
+  color spawnCol;      // spawnCol needs to be a GLOBAL variable
   float fill_H;         // Hue (HSB) / Red (RGB)
   float fill_S;         // Saturation (HSB) / Green (RGB)
   float fill_B;         // Brightness (HSB) / Blue (RGB)
-  float fill_Alpha;      // Transparency (HSB & RGB)
+  float fillAlpha;      // Transparency (HSB & RGB)
 
   // FILL COLOUR
-  PVector stroke_Colour; // For HSB you need Hue to be the heading of a PVector
+  color strokeColor; // For HSB you need Hue to be the heading of a PVector
   float stroke_H;       // Hue (HSB) / Red (RGB)
   float stroke_S;       // Saturation (HSB) / Green (RGB)
   float stroke_B;       // Brightness (HSB) / Blue (RGB)
-  float stroke_Alpha;    // Transparency (HSB & RGB)
+  float strokeAlpha;    // Transparency (HSB & RGB)
 
   // CONSTRUCTOR: create a 'cell' object
   Cell (PVector pos, PVector vel, DNA dna_) {
@@ -73,6 +75,7 @@ class Cell {
   age = 0; // Age is 'number of frames since birth'. A new cell always starts with age = 0. From age comes maturity
   lifespan = map(dna.genes[10], 0, 1, 1000, 2000); // Lifespan can be lowered by DNA but not increased
   fertility = map(dna.genes[8], 1, 0, 0.7, 0.9); // How soon will the cell become fertile?
+  maturity = map(age, 0, lifespan, 1, 0);
   spawnCount = int(map(dna.genes[10], 1, 0, 1, 5)); // Max. number of spawns
 
   // SIZE AND SHAPE
@@ -83,7 +86,7 @@ class Cell {
 
   growth = (cellStartSize-cellEndSize)/lifespan; // Should work for both large>small and small>large
   drawStep = 1;
-  drawStepB = 1;
+  drawStepN = 1;
 
   // MOVEMENT
   position = pos.copy(); //cell has position
@@ -101,13 +104,13 @@ class Cell {
   fill_S = map(dna.genes[1], 0, 1, 0, 255);
   fill_B = map(dna.genes[2], 0, 1, 0, 255);
   fillColor = color(fill_H, fill_S, fill_B); // Initial color is set
-  fill_Alpha = map(dna.genes[3], 0, 1, 128, 255);
+  fillAlpha = map(dna.genes[3], 0, 1, 128, 255);
 
-  stroke_HR = map(dna.genes[4], 0, 1, 0, 360);
-  stroke_SG = map(dna.genes[5], 0, 1, 0, 255);
-  stroke_BB = map(dna.genes[6], 0, 1, 0, 255);
+  stroke_H = map(dna.genes[4], 0, 1, 0, 360);
+  stroke_S = map(dna.genes[5], 0, 1, 0, 255);
+  stroke_B = map(dna.genes[6], 0, 1, 0, 255);
   strokeColor = color(stroke_H, stroke_S, stroke_B); // Initial color is set
-  stroke_Alpha = map(dna.genes[7], 0, 1, 0, 64);
+  strokeAlpha = map(dna.genes[7], 0, 1, 0, 64);
   }
 
   void run() {
@@ -125,10 +128,10 @@ class Cell {
     age ++;
     maturity = map(age, 0, lifespan, 1, 0);
     drawStep --;
-    drawStepStart = map(p.stepSize, 0, 100, 0 , (r *2 + growth));
+    float drawStepStart = map(p.stepSize, 0, 100, 0 , (r *2 + growth));
     if (drawStep < 0) {drawStep = drawStepStart;}
     drawStepN--;
-    drawStepNStart = map(p.stepSizeN, 0, 100, 0 , r *2);
+    float drawStepNStart = map(p.stepSizeN, 0, 100, 0 , r *2);
     if (drawStepN < 0) {drawStepN = drawStepNStart;}
   }
 
@@ -138,9 +141,9 @@ class Cell {
     velocityNoise = new PVector(vx,vy);
     xoff += step;
     yoff += step;
-    velocity = PVector.lerp(velocityLinear, velocityNoise, noisePercent);
+    velocity = PVector.lerp(velocityLinear, velocityNoise, noisePercent); //<>//
     float screwAngle = map(maturity, 0, 1, 0, spiral * TWO_PI);
-    if (dna.genes[11] >= 0.5) {screwAngle *= -1}
+    if (dna.genes[11] >= 0.5) {screwAngle *= -1;}
     velocity.rotate(screwAngle);
     position.add(velocity);
   }
@@ -157,7 +160,7 @@ class Cell {
   void updateColour() {
     if (p.fill_STwist > 0) {fill_S = map(maturity, 1, 0, (255-p.fill_STwist), 255); fillColor = color(fill_H, fill_S, fill_B);} // Modulate fill saturation by radius
     if (p.fill_BTwist > 0) {fill_B = map(maturity, 0, 1, (255-p.fill_BTwist), 255); fillColor = color(fill_H, fill_S, fill_B);} // Modulate fill brightness by radius
-    if (p.fill_ATwist > 0) {fill_Alpha = map(maturity, 0, 1, (255-p.fill_ATwist), 255);} // Modulate fill Alpha by radius
+    if (p.fill_ATwist > 0) {fillAlpha = map(maturity, 0, 1, (255-p.fill_ATwist), 255);} // Modulate fill Alpha by radius
     if (p.fill_HTwist > 0) { // Modulate fill hue by radius. Does not change original hue value but replaces it with a 'twisted' version
       float fill_Htwisted = map(maturity, 1, 0, fill_H, fill_H+p.fill_HTwist);
       if (fill_Htwisted > 360) {fill_Htwisted -= 360;}
@@ -165,7 +168,7 @@ class Cell {
     }
     if (p.stroke_STwist > 0) {stroke_S = map(maturity, 1, 0, (255-p.stroke_STwist), 255); strokeColor = color(stroke_H, stroke_S, stroke_B);} // Modulate stroke saturation by radius
     if (p.stroke_BTwist > 0) {stroke_B = map(maturity, 0, 1, (255-p.stroke_BTwist), 255); strokeColor = color(stroke_H, stroke_S, stroke_B);} // Modulate stroke brightness by radius
-    if (p.stroke_ATwist > 0) {stroke_Alpha = map(maturity, 0, 1, (255-p.stroke_ATwist), 255);} // Modulate stroke Alpha by radius
+    if (p.stroke_ATwist > 0) {strokeAlpha = map(maturity, 0, 1, (255-p.stroke_ATwist), 255);} // Modulate stroke Alpha by radius
     if (p.stroke_HTwist > 0) { // Modulate stroke hue by radius
       float stroke_Htwisted = map(maturity, 1, 0, stroke_H, stroke_H+p.stroke_HTwist);
       if (stroke_Htwisted > 360) {stroke_Htwisted -= 360;}
@@ -198,8 +201,8 @@ class Cell {
   }
 
   void display() {
-    if (p.strokeDisable) {noStroke();} else {stroke(hue(strokeColor), saturation(strokeColor), brightness(strokeColor), stroke_Alpha);}
-    if (p.fillDisable) {noFill();} else {fill(hue(fillColor), saturation(fillColor), brightness(fillColor), fill_Alpha);}
+    if (p.strokeDisable) {noStroke();} else {stroke(hue(strokeColor), saturation(strokeColor), brightness(strokeColor), strokeAlpha);}
+    if (p.fillDisable) {noFill();} else {fill(hue(fillColor), saturation(fillColor), brightness(fillColor), fillAlpha);}
 
     float angle = velocity.heading();
     pushMatrix();
@@ -232,7 +235,7 @@ class Cell {
       if (distMag < (r + other.r)) { conception(other, distVect);} // Spawn a new cell
   }
 
-  void conception(other, distVect) {
+  void conception(Cell other, PVector distVect) {
     // Decrease spawn counters.
     spawnCount --;
     other.spawnCount --;
@@ -249,22 +252,22 @@ class Cell {
     spawnVel.normalize();               // Normalize to leave just the direction and magnitude of 1 (will be multiplied later)
 
     // Combine the DNA of the parent cells
-    childDNA = dna.combine(other.dna);
+    DNA childDNA = dna.combine(other.dna);
 
     // Calculate new fill colour for child (a 50/50 blend of each parent cells)
-    childFillColor = lerpColor(fillColor, other.fillColor, 0.5);
+    color childFillColor = lerpColor(fillColor, other.fillColor, 0.5);
 
     // Calculate new stroke colour for child (a 50/50 blend of each parent cells)
-    childStrokeColor = lerpColor(strokeColor, other.strokeColor, 0.5);
+    color childStrokeColor = lerpColor(strokeColor, other.strokeColor, 0.5);
 
     // Genes for color require special treatment as I want childColor to be a 50/50 blend of parents colors
     // I will therefore overwrite color genes with reverse-engineered values after lerping:
-    childDNA.genes[0] = map(hue(childFillColor), 0, 360, 0, 1) // Get the  lerped hue value and map it back to gene-range
-    childDNA.genes[1] = map(saturation(childFillColor), 0, 255, 0, 1) // Get the  lerped hue value and map it back to gene-range
-    childDNA.genes[2] = map(brightness(childFillColor), 0, 255, 0, 1) // Get the  lerped hue value and map it back to gene-range
-    childDNA.genes[4] = map(hue(childStrokeColor), 0, 360, 0, 1) // Get the  lerped hue value and map it back to gene-range
-    childDNA.genes[5] = map(saturation(childStrokeColor), 0, 255, 0, 1) // Get the  lerped hue value and map it back to gene-range
-    childDNA.genes[6] = map(brightness(childStrokeColor), 0, 255, 0, 1) // Get the  lerped hue value and map it back to gene-range
+    childDNA.genes[0] = map(hue(childFillColor), 0, 360, 0, 1); // Get the  lerped hue value and map it back to gene-range
+    childDNA.genes[1] = map(saturation(childFillColor), 0, 255, 0, 1); // Get the  lerped hue value and map it back to gene-range
+    childDNA.genes[2] = map(brightness(childFillColor), 0, 255, 0, 1); // Get the  lerped hue value and map it back to gene-range
+    childDNA.genes[4] = map(hue(childStrokeColor), 0, 360, 0, 1); // Get the  lerped hue value and map it back to gene-range
+    childDNA.genes[5] = map(saturation(childStrokeColor), 0, 255, 0, 1); // Get the  lerped hue value and map it back to gene-range
+    childDNA.genes[6] = map(brightness(childStrokeColor), 0, 255, 0, 1); // Get the  lerped hue value and map it back to gene-range
 
     //childDNA.mutate(0.01); // Child DNA can mutate. HACKED! Mutation is temporarily disabled!
 
