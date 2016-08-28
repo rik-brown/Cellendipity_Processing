@@ -8,17 +8,15 @@ class DNA {
   float[] genes;  // 'genes' is an array of float values in the range (0-1)
 
   // Constructor (makes a random DNA)
-  DNA(float[] newgenes) {
-    if (newgenes) {genes = newgenes;}
-    // Tests to see if the function is called with a newgenes passed in or not:
-    // if it is, simply return a copy as this.genes
-    // if not, populate this.genes with 'numGenes' new genes
-    else {
+  DNA() {
       genes = new float[12];  // DNA contains an array called 'genes' with [4] float values
       for (int i = 0; i < genes.length; i++) {
         genes[i] = random(0,1);    // Each gene is a random float value between 0 and 1
       }
     }
+
+  DNA(float[] newgenes) {
+    genes = newgenes;
   }
 
   DNA combine(DNA otherDNA_) { // Returns a new set of DNA consisting of randomly selected genes from both parents

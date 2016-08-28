@@ -127,19 +127,19 @@ void manageColony() {
 }
 
 // We can add a creature manually if we so desire
-// void mousePressed() {
-//   PVector mousePos = new PVector (mouseX, mouseY);
-//   PVector vel = PVector.random2D();
-//   DNA dna = new DNA();
-//   colony.spawn(mousePos, vel, dna);
-// }
+void mousePressed() {
+  PVector mousePos = new PVector (mouseX, mouseY);
+  PVector vel = PVector.random2D();
+  DNA dna = new DNA();
+  colony.spawn(mousePos, vel, dna);
+}
 
-// void mouseDragged() {
-//   PVector mousePos = new PVector (mouseX, mouseY);
-//   PVector vel = PVector.random2D();
-//   DNA dna = new DNA();
-//   colony.spawn(mousePos, vel, dna);
-// }
+void mouseDragged() {
+  PVector mousePos = new PVector (mouseX, mouseY);
+  PVector vel = PVector.random2D();
+  DNA dna = new DNA();
+  colony.spawn(mousePos, vel, dna);
+}
 
 void screendump() {
   saveFrame(screendumpPath);
