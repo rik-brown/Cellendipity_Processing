@@ -73,7 +73,7 @@ class Cell {
 
   // GROWTH AND REPRODUCTION
   age = 0; // Age is 'number of frames since birth'. A new cell always starts with age = 0. From age comes maturity
-  lifespan = map(dna.genes[10], 0, 1, 500, 2000);
+  lifespan = map(dna.genes[10], 0, 1, 200, 2000);
   fertility = map(dna.genes[8], 1, 0, 0.7, 0.9); // How soon will the cell become fertile?
   maturity = map(age, 0, lifespan, 1, 0);
   spawnCount = int(map(dna.genes[10], 1, 0, 1, 5)); // Max. number of spawns
@@ -150,7 +150,7 @@ class Cell {
 
   void updateSize() {
     // r = ((sin(map(maturity, 1, 0, 0, PI)))+0)*cellStartSize;
-    r -= growth;
+    r += growth;
   }
 
   void updateFertility() {
@@ -288,18 +288,19 @@ class Cell {
      int rowHeight = 15;
      fill(360, 255);
      textSize(rowHeight);
-     text("r:" + r, position.x, position.y + rowHeight * 0);
-     text("cellStartSize:" + cellStartSize, position.x, position.y + rowHeight * 1);
-     //text("fill_HR:" + fill_HR, position.x, position.y);
-     //text("rMax:" + rMax, position.x, position.y);
-     //text("growth:" + growth, position.x, position.y);
-     //text("age:" + age, position.x, position.y+20);
-     //text("fertile:" + fertile, position.x, position.y rowHeight * 2);
-     //text("fertility:" + fertility, position.x, position.y rowHeight * 3);
-     //text("spawnCount:" + collCount, position.x, position.y rowHeight * 4);
-     //text("x-velocity:" + velocity.x, position.x, position.y+0);
-     //text("y-velocity:" + velocity.y, position.x, position.y+10);
-     //text("velocity heading:" + velocity.heading(), position.x, position.y+20);
+     //text("r:" + r, position.x, position.y + rowHeight * 0);
+     //text("cellStartSize:" + cellStartSize, position.x, position.y + rowHeight * 1);
+     //text("fill_HR:" + fill_HR, position.x, position.y + rowHeight * 0);
+     //text("rMax:" + rMax, position.x, position.y + rowHeight * 0);
+     //text("growth:" + growth, position.x, position.y + rowHeight * 0);
+     //text("age:" + age, position.x, position.y + rowHeight * 0);
+     text("maturity:" + maturity, position.x, position.y + rowHeight * 3);
+     text("fertile:" + fertile, position.x, position.y + rowHeight * 0);
+     text("fertility:" + fertility, position.x, position.y + rowHeight * 1);
+     text("spawnCount:" + spawnCount, position.x, position.y + rowHeight * 2);
+     //text("x-velocity:" + velocity.x, position.x, position.y + rowHeight * 0);
+     //text("y-velocity:" + velocity.y, position.x, position.y + rowHeight * 0);
+     //text("velocity heading:" + velocity.heading(), position.x, position.y + rowHeight * 0);
      }
 
 

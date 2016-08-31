@@ -13,12 +13,12 @@ String screendumpPath = "C:/Richard/Personal/Code/Gallery/Cellendipity_Processin
 void setup() {
   colorMode(HSB, 360, 255, 255, 255);
   // fullScreen();
-  size(1000, 1000); // debug
+  size(512, 512); // debug
   ellipseMode(RADIUS);
   p = new Parameters();
   colony = new Colony();
   if (p.greyscaleON) {background(p.bkgColGrey); } else {background(p.bkgColor);}
-  if (p.debug) {frameRate(15);}
+  if (p.debug) {frameRate(10);}
 }
 
 void draw() {

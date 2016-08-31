@@ -14,19 +14,33 @@ class DNA {
         genes[i] = random(0,1);    // Each gene is a random float value between 0 and 1
         //genes[i] = 0;    // Each gene = 0.5
       }
-      //genes[0] = 0.5;
-      genes[1] = 1;
-      genes[2] = 0.8;
-      genes[3] = 0;
-      //genes[4] = 0;
-      genes[5] = 0;
-      genes[6] = 0.1;
-      genes[7] = 0;
+      // DNA gene mapping (12 genes)
+      // 0 = fill Hue & vMax (Noise)
+      // 1 = fill Saturation
+      // 2 = fill Brightness & Spiral screw
+      // 3 = fill Alpha
+      // 4 = stroke Hue & step (Noise)
+      // 5 = stroke Saturation
+      // 6 = stroke Brightness & noisePercent
+      // 7 = stroke Alpha
+      // 8 = cellStartSize & Fertility (large size = lower fertility)
+      // 9 = cellEndSize
+      // 10 = lifespan & spawnCount (long lifespan = few children)
+      // 11 = flatness & spiral handedness
+
+      // genes[0] = 0.5;
+      // genes[1] = 1;
+      // genes[2] = 0.8;
+      // genes[3] = 0;
+      // genes[4] = 0;
+      // genes[5] = 0;
+      // genes[6] = 0;
+      // genes[7] = 0;
       genes[8] = 0.9;
-      genes[9] = 0.05;
-      genes[10] = 0.2;
-      genes[11] = 0;
-      
+      // genes[9] = 0.05;
+      // genes[10] = 0.2;
+      // genes[11] = 0;
+
     }
 
   DNA(float[] newgenes) {
