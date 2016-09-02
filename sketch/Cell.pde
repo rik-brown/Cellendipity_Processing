@@ -74,7 +74,7 @@ class Cell {
   // GROWTH AND REPRODUCTION
   age = 0; // Age is 'number of frames since birth'. A new cell always starts with age = 0. From age comes maturity
   lifespan = map(dna.genes[10], 0, 1, 200, 1000);
-  fertility = map(dna.genes[8], 1, 0, 0.7, 0.9); // How soon will the cell become fertile?
+  fertility = map(dna.genes[8], 1, 0, 0.5, 0.8); // How soon will the cell become fertile?
   maturity = map(age, 0, lifespan, 1, 0);
   spawnCount = int(map(dna.genes[10], 1, 0, 1, 5)); // Max. number of spawns
 
