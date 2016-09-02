@@ -18,11 +18,11 @@ void setup() {
   p = new Parameters();
   colony = new Colony();
   if (p.greyscaleON) {background(p.bkgColGrey); } else {background(p.bkgColor);}
-  if (p.debug) {frameRate(15);}
+  //if (p.debug) {frameRate(15);}
 }
 
 void draw() {
-  if (p.trailMode == 1 || p.debug) {background(p.bkgColor);}
+  //if (p.trailMode == 1 || p.debug) {background(p.bkgColor);}
   if (p.trailMode == 2) {trails();}
   colony.run();
   manageColony();
@@ -45,7 +45,7 @@ void trails() {
 }
 
 void manageColony() {
-  if (colony.cells.size() == 0) { //  If an extinction has occurred...
+  if (colony.cells.size() == 0 || frameCount > 5000) { //  If an extinction has occurred...
     if (p.screendumpON) {screendump();} //WARNING! ALWAYS repopulate & restart the colony after doing this once!
     exit();
     populateColony(); // .... repopulate the colony

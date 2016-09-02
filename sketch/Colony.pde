@@ -2,7 +2,7 @@ class Colony {
 
   // VARIABLES
   ArrayList<Cell> cells;    // An arraylist for all the cells //<>// //<>// //<>//
-  int colonyMaxSize = 300;
+  int colonyMaxSize = 100;
 
   // CONSTRUCTOR: Create a 'Colony' object, initially populated with 'num' cells
   Colony() {
@@ -57,7 +57,7 @@ class Colony {
     rect(0,0,230,40);
     fill(360);
     textSize(16);
-    text("Nr. cells: " + cells.size() + " MaxLimit:" + colonyMaxSize, 10, 18);
+    text("frames" + frameCount + " Nr. cells: " + cells.size() + " MaxLimit:" + colonyMaxSize, 10, 18);
     text("TrailMode: " + p.trailMode + " Debug:" + p.debug, 10, 36);
   }
 }

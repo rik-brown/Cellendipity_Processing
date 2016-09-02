@@ -32,20 +32,20 @@ class Parameters {
   int stroke_ATwist;
 
   Parameters() {
-    debug = false;
+    debug = true;
     centerSpawn = false; // true=initial spawn is width/2, height/2 false=random
     autoRestart = false; // If true, will not wait for keypress before starting anew
     screendumpON = false;
     fillDisable = false;
-    strokeDisable = true;
+    strokeDisable = false;
     greyscaleON = false;
     nucleus = true;
     stepped = true;
     wraparound = false;
 
-    strainSize = int(random(10,10)); // Number of cells in a strain
-    numStrains = int(random(1,1)); // Number of strains (a group of cells sharing the same DNA)
-    stepSize = 10;
+    strainSize = int(random(1,10)); // Number of cells in a strain
+    numStrains = int(random(1,3)); // Number of strains (a group of cells sharing the same DNA)
+    stepSize = 0;
     stepSizeN = 0;
     trailMode = 3; // 1=none, 2 = blend, 3 = continuous
 

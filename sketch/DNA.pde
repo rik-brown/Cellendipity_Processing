@@ -31,12 +31,12 @@ class DNA {
       // genes[0] = 0.5;
       // genes[1] = 1;
       // genes[2] = 0.8;
-      // genes[3] = 0;
+      genes[3] = 0.005;
       // genes[4] = 0;
       // genes[5] = 0;
       // genes[6] = 0;
-      // genes[7] = 0;
-      genes[8] = 0.9;
+      genes[7] = 0.005;
+      genes[8] = 0.7;
       // genes[9] = 0.05;
       // genes[10] = 0.2;
       // genes[11] = 0;

@@ -16,7 +16,7 @@ class Cell {
   // SIZE AND SHAPE
   float cellStartSize;
   float cellEndSize;
-  float r;         // Radius (half the width/height of the ellipse, which is drawn with width = r * 2)
+  float r;         // Radius
   float flatness;  // To make flatter ellipses (1 = circle)
   float growth;    // Radius grows by this amount per frame
   float drawStep;  // To enable spacing of the drawn object (ellipse)
@@ -79,9 +79,9 @@ class Cell {
   spawnCount = int(map(dna.genes[10], 1, 0, 1, 5)); // Max. number of spawns
 
   // SIZE AND SHAPE
-  cellStartSize = map(dna.genes[8], 0, 1, 10, 30);
+  cellStartSize = map(dna.genes[8], 0, 1, 10, 50);
   cellEndSize = cellStartSize * map(dna.genes[9], 0, 1, 0, 0.1);
-  //r = cellStartSize; // Initial value for radius
+  r = cellStartSize; // Initial value for radius
   flatness = map(dna.genes[11], 0, 1, 0.5, 2); // To make circles into ellipses. range 0.5 - 1.5
 
   growth = (cellStartSize-cellEndSize)/lifespan; // Should work for both large>small and small>large
@@ -121,7 +121,7 @@ class Cell {
     updateColour();
     if (p.wraparound) {checkBoundaryWraparound();}
     display();
-    if (p.debug) {cellDebugger();}
+    //if (p.debug) {cellDebugger();}
   }
 
   void live() {
