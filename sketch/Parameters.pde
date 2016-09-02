@@ -32,7 +32,7 @@ class Parameters {
   int stroke_ATwist;
 
   Parameters() {
-    debug = true;
+    debug = false;
     centerSpawn = false; // true=initial spawn is width/2, height/2 false=random
     autoRestart = false; // If true, will not wait for keypress before starting anew
     screendumpON = false;

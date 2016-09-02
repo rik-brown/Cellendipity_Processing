@@ -22,7 +22,7 @@ void setup() {
 }
 
 void draw() {
-  //if (p.trailMode == 1 || p.debug) {background(p.bkgColor);}
+  if (p.trailMode == 1 || p.debug) {background(p.bkgColor);}
   if (p.trailMode == 2) {trails();}
   colony.run();
   manageColony();

@@ -73,14 +73,14 @@ class Cell {
 
   // GROWTH AND REPRODUCTION
   age = 0; // Age is 'number of frames since birth'. A new cell always starts with age = 0. From age comes maturity
-  lifespan = map(dna.genes[10], 0, 1, 200, 2000);
+  lifespan = map(dna.genes[10], 0, 1, 200, 1000);
   fertility = map(dna.genes[8], 1, 0, 0.7, 0.9); // How soon will the cell become fertile?
   maturity = map(age, 0, lifespan, 1, 0);
   spawnCount = int(map(dna.genes[10], 1, 0, 1, 5)); // Max. number of spawns
 
   // SIZE AND SHAPE
   cellStartSize = map(dna.genes[8], 0, 1, 10, 50);
-  cellEndSize = cellStartSize * map(dna.genes[9], 0, 1, 0, 0.1);
+  cellEndSize = cellStartSize * map(dna.genes[9], 0, 1, 0.05, 0.2);
   r = cellStartSize; // Initial value for radius
   flatness = map(dna.genes[11], 0, 1, 0.5, 2); // To make circles into ellipses. range 0.5 - 1.5
 
@@ -121,7 +121,7 @@ class Cell {
     updateColour();
     if (p.wraparound) {checkBoundaryWraparound();}
     display();
-    //if (p.debug) {cellDebugger();}
+    if (p.debug) {cellDebugger();}
   }
 
   void live() {
@@ -141,7 +141,7 @@ class Cell {
     velocityNoise = new PVector(vx,vy);
     xoff += step;
     yoff += step;
-    velocity = PVector.lerp(velocityLinear, velocityNoise, noisePercent); //<>// //<>//
+    velocity = PVector.lerp(velocityLinear, velocityNoise, noisePercent); //<>// //<>// //<>//
     float screwAngle = map(maturity, 0, 1, 0, spiral * TWO_PI);
     if (dna.genes[11] >= 0.5) {screwAngle *= -1;}
     velocity.rotate(screwAngle);
@@ -150,7 +150,7 @@ class Cell {
 
   void updateSize() {
     // r = ((sin(map(maturity, 1, 0, 0, PI)))+0)*cellStartSize;
-    r += growth;
+    r -= growth;
   }
 
   void updateFertility() {
@@ -196,7 +196,6 @@ class Cell {
   boolean dead() {
     if (age >= lifespan) {return true;} // Death by old age (regardless of size, which may remain constant)
     if (position.x > width + r * flatness || position.x < -r * flatness || position.y > height + r * flatness || position.y < -r * flatness) {return true;} // Death if move beyond canvas boundary
-    if (position.x > width+r ||  position.x < -r || position.y > height+r ||  position.y < -r) { return true;  } // Death if move beyond canvas boundary
     else { return false; }
     //return false; // Use if no death
   }
@@ -285,22 +284,23 @@ class Cell {
   }
 
   void cellDebugger() { // For debug only
-     int rowHeight = 15;
-     fill(360, 255);
-     textSize(rowHeight);
-     //text("r:" + r, position.x, position.y + rowHeight * 0);
-     //text("cellStartSize:" + cellStartSize, position.x, position.y + rowHeight * 1);
-     //text("fill_HR:" + fill_HR, position.x, position.y + rowHeight * 0);
-     //text("rMax:" + rMax, position.x, position.y + rowHeight * 0);
-     //text("growth:" + growth, position.x, position.y + rowHeight * 0);
-     //text("age:" + age, position.x, position.y + rowHeight * 0);
-     text("maturity:" + maturity, position.x, position.y + rowHeight * 3);
-     text("fertile:" + fertile, position.x, position.y + rowHeight * 0);
-     text("fertility:" + fertility, position.x, position.y + rowHeight * 1);
-     text("spawnCount:" + spawnCount, position.x, position.y + rowHeight * 2);
-     //text("x-velocity:" + velocity.x, position.x, position.y + rowHeight * 0);
-     //text("y-velocity:" + velocity.y, position.x, position.y + rowHeight * 0);
-     //text("velocity heading:" + velocity.heading(), position.x, position.y + rowHeight * 0);
+  int rowHeight = 15;
+  fill(360, 255);
+  textSize(rowHeight);
+  text("r:" + r, position.x, position.y + rowHeight * 0);
+  text("cellStartSize:" + cellStartSize, position.x, position.y + rowHeight * 1);
+  text("cellEndSize:" + cellEndSize, position.x, position.y + rowHeight * 2);
+  //text("fill_HR:" + fill_HR, position.x, position.y + rowHeight * 0);
+  //text("rMax:" + rMax, position.x, position.y + rowHeight * 0);
+  text("growth:" + growth, position.x, position.y + rowHeight * 3);
+  //text("age:" + age, position.x, position.y + rowHeight * 0);
+  text("maturity:" + maturity, position.x, position.y + rowHeight * 4);
+  //text("fertile:" + fertile, position.x, position.y + rowHeight * 0);
+  //text("fertility:" + fertility, position.x, position.y + rowHeight * 1);
+  //text("spawnCount:" + spawnCount, position.x, position.y + rowHeight * 2);
+  //text("x-velocity:" + velocity.x, position.x, position.y + rowHeight * 0);
+  //text("y-velocity:" + velocity.y, position.x, position.y + rowHeight * 0);
+  //text("velocity heading:" + velocity.heading(), position.x, position.y + rowHeight * 0);
      }
 
 
