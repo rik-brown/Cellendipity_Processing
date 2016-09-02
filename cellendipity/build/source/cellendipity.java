@@ -12,7 +12,7 @@ import java.io.InputStream;
 import java.io.OutputStream; 
 import java.io.IOException; 
 
-public class sketch extends PApplet {
+public class cellendipity extends PApplet {
 
 /*
 * GOAL: Make this work like
@@ -601,7 +601,7 @@ class Parameters {
 }
   public void settings() {  size(1000, 1000); }
   static public void main(String[] passedArgs) {
-    String[] appletArgs = new String[] { "sketch" };
+    String[] appletArgs = new String[] { "cellendipity" };
     if (passedArgs != null) {
       PApplet.main(concat(appletArgs, passedArgs));
     } else {
